@@ -1,0 +1,6 @@
+name: DankMeme
+version: 1.0
+author: [Maxopoly]
+main: com.github.maxopoly.DankMeme
+commands:
+permissions:
