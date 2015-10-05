@@ -1,12 +1,12 @@
-package com.github.maxopoly.DankMeme;
+package com.github.maxopoly.Emray;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.github.maxopoly.DankMeme.commands.CommandHandler;
+import com.github.maxopoly.Emray.commands.CommandHandler;
 
-public class DankMeme extends JavaPlugin {
+public class Emray extends JavaPlugin {
 	private CommandHandler commandHandler;
 	private static JavaPlugin plugin;
 
@@ -28,7 +28,7 @@ public class DankMeme extends JavaPlugin {
 	}
 
 	public static void sendConsoleMessage(String message) {
-		plugin.getLogger().info("[DANKMEME] " + message);
+		plugin.getLogger().info("[Emray] " + message);
 	}
 
 }

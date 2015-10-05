@@ -1,4 +1,4 @@
-package com.github.maxopoly.DankMeme.commands;
+package com.github.maxopoly.Emray.commands;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class CommandHandler implements CommandExecutor {
 	public CommandHandler(JavaPlugin instance) {
 		plugin = instance;
 
-		plugin.getCommand("dm").setExecutor(this);
+		plugin.getCommand("em").setExecutor(this);
 
 		registerCommands(new AbstractCommand[] {});
 	}

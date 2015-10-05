@@ -1,4 +1,4 @@
-package com.github.maxopoly.DankMeme.commands;
+package com.github.maxopoly.Emray.commands;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public abstract class AbstractCommand {
 
 	public String getDescription() {
 		try {
-			return plugin.getCommand("dm " + name).getDescription();
+			return plugin.getCommand("em " + name).getDescription();
 		} catch (NullPointerException e) {
 			return null;
 		}
@@ -34,7 +34,7 @@ public abstract class AbstractCommand {
 
 	public String getUsage() {
 		try {
-			return plugin.getCommand("dm " + name).getUsage();
+			return plugin.getCommand("em " + name).getUsage();
 		} catch (NullPointerException e) {
 			return null;
 		}
@@ -42,7 +42,7 @@ public abstract class AbstractCommand {
 
 	public String getPermission() {
 		try {
-			return plugin.getCommand("dm " + name).getPermission();
+			return plugin.getCommand("em " + name).getPermission();
 		} catch (NullPointerException e) {
 			return null;
 		}
@@ -50,7 +50,7 @@ public abstract class AbstractCommand {
 
 	public List<String> getAliases() {
 		try {
-			return plugin.getCommand("dm " + name).getAliases();
+			return plugin.getCommand("em " + name).getAliases();
 		} catch (NullPointerException e) {
 			return null;
 		}
