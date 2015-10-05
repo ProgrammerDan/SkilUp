@@ -7,13 +7,14 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import com.github.maxopoly.Emray.Emray;
 
 public class CommandHandler implements CommandExecutor {
-	private JavaPlugin plugin;
+	private Emray plugin;
 	HashMap<String, AbstractCommand> commands = new HashMap<String, AbstractCommand>();
 
-	public CommandHandler(JavaPlugin instance) {
+	public CommandHandler(Emray instance) {
 		plugin = instance;
 
 		plugin.getCommand("em").setExecutor(this);

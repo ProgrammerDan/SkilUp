@@ -1,14 +1,13 @@
 package com.github.maxopoly.Emray;
 
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import static com.github.maxopoly.Emray.Emray.sendConsoleMessage;
 
 public class ConfigParser {
-	JavaPlugin plugin;
+	Emray plugin;
 
-	ConfigParser(JavaPlugin plugin) {
+	ConfigParser(Emray plugin) {
 		this.plugin = plugin;
 	}
 

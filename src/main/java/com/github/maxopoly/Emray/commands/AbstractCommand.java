@@ -3,13 +3,14 @@ package com.github.maxopoly.Emray.commands;
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import com.github.maxopoly.Emray.Emray;
 
 public abstract class AbstractCommand {
-	protected final JavaPlugin plugin;
+	protected final Emray plugin;
 	protected final String name;
 
-	public AbstractCommand(JavaPlugin instance, String commandName) {
+	public AbstractCommand(Emray instance, String commandName) {
 		plugin = instance;
 		name = commandName;
 	}

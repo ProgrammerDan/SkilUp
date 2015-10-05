@@ -9,6 +9,7 @@ import com.github.maxopoly.Emray.commands.CommandHandler;
 public class Emray extends JavaPlugin {
 	private CommandHandler commandHandler;
 	private static JavaPlugin plugin;
+	private static EmrayManager manager;
 
 	@Override
 	public void onEnable() {
@@ -29,6 +30,10 @@ public class Emray extends JavaPlugin {
 
 	public static void sendConsoleMessage(String message) {
 		plugin.getLogger().info("[Emray] " + message);
+	}
+
+	public static EmrayManager getManager() {
+		return manager;
 	}
 
 }
