@@ -2,20 +2,19 @@ package com.github.maxopoly.Emray;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import com.github.maxopoly.Emray.skills.AbstractSkill;
+import com.github.maxopoly.Emray.skills.PlayerXPStatus;
+import com.github.maxopoly.Emray.skills.Skill;
 
 public class EmrayManager {
-	private HashMap<String, HashMap<String, AbstractSkill>> skills;
-	private Emray plugin;
-	private LinkedList<String> skillNames;
+	private HashMap<String, Skill> skills;
 
-	public EmrayManager(Emray plugin, LinkedList<String> skillNames) {
-		this.plugin = plugin;
-		skills = new HashMap<String, HashMap<String, AbstractSkill>>();
-		this.skillNames = skillNames;
+	public EmrayManager() {
+		skills = new HashMap<String, Skill>();
 	}
 
 	/**
@@ -31,7 +30,7 @@ public class EmrayManager {
 	 * @param playerName
 	 *            The player whos data is saved
 	 */
-	public void savePlayerDataToDataBase(String playerName) {
+	public void savePlayerDataToDataBase(Player p) {
 
 	}
 
@@ -42,7 +41,7 @@ public class EmrayManager {
 	 *            The players name whos data should be loaded
 	 * @return true if the data was found and loaded, false if no data was found
 	 */
-	public boolean loadPlayerDataFromDataBase(String playerName) {
+	public boolean loadPlayerDataFromDataBase(Player p) {
 		// TODO
 		return true;
 	}
@@ -55,40 +54,20 @@ public class EmrayManager {
 	 *            The name of the player who joined for the first time
 	 */
 	public void playerFirstLogin(Player p) {
-		HashMap<String, AbstractSkill> temp = new HashMap<String, AbstractSkill>();
-		for (String skillName : skillNames) {
-			AbstractSkill as = new AbstractSkill(skillName, 0, 0, p.getName());
-			temp.put(skillName, as);
+		HashMap<String, Skill> temp = new HashMap<String, Skill>();
+		for (Map.Entry <String,Skill> skillEntry : skills.entrySet()) {
+			PlayerXPStatus pxps = new PlayerXPStatus(skillEntry.getValue(), p, 0, 0);
+			skillEntry.getValue().addXPStatus(pxps);
 		}
-		skills.put(p.getName(), temp);
+	}
+	
+	
+	public Skill getSkillByName(String skillName) {
+		return skills.get(skillName);
+	}
+	
+	public void addSkill(Skill skill) {
+		skills.put(skill.getName(),skill);
 	}
 
-	/**
-	 * Gets a map of all skills of player
-	 * 
-	 * @param player
-	 *            The name of the player
-	 * @return HashMap containing all the skills of the player
-	 */
-	public HashMap<String, AbstractSkill> getSkills(String player) {
-		return skills.get(player);
-	}
-
-	/**
-	 * Gets a specific skill of a player
-	 * 
-	 * @param player
-	 *            The name of the player
-	 * @param skillName
-	 *            The name of the wanted skill
-	 * @return The skill or null if no data on the player exists or no data for
-	 *         the given skill name
-	 */
-	public AbstractSkill getSkillByName(Player player, String skillName) {
-		HashMap<String, AbstractSkill> playersSkills = skills.get(player);
-		if (playersSkills == null) {
-			return null;
-		}
-		return playersSkills.get(skillName);
-	}
 }

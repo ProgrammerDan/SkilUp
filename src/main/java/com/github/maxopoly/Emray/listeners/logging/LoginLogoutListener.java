@@ -9,24 +9,23 @@ import com.github.maxopoly.Emray.Emray;
 import com.github.maxopoly.Emray.EmrayManager;
 
 public class LoginLogoutListener implements Listener {
-
-	Emray plugin;
 	EmrayManager em;
 
 	LoginLogoutListener(Emray plugin) {
-		this.plugin = plugin;
+		plugin.getServer().getPluginManager()
+		.registerEvents(this, plugin);
 		em = plugin.getManager();
 	}
 
 	@EventHandler
 	public void playerLogin(PlayerLoginEvent e) {
-		if (!em.loadPlayerDataFromDataBase(e.getPlayer().getName())) {
+		if (!em.loadPlayerDataFromDataBase(e.getPlayer())) {
 			em.playerFirstLogin(e.getPlayer());
 		}
 	}
 	
 	@EventHandler
 	public void playerLogout(PlayerQuitEvent e) {
-		em.savePlayerDataToDataBase(e.getPlayer().getName());
+		em.savePlayerDataToDataBase(e.getPlayer());
 	}
 }

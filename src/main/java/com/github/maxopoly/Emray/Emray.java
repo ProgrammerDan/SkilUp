@@ -8,7 +8,7 @@ import com.github.maxopoly.Emray.commands.CommandHandler;
 
 public class Emray extends JavaPlugin {
 	private CommandHandler commandHandler;
-	private static JavaPlugin plugin;
+	private static Emray plugin;
 	private static EmrayManager manager;
 
 	@Override
@@ -34,6 +34,10 @@ public class Emray extends JavaPlugin {
 
 	public static EmrayManager getManager() {
 		return manager;
+	}
+	
+	public static Emray getPlugin() {
+		return plugin;
 	}
 
 }
