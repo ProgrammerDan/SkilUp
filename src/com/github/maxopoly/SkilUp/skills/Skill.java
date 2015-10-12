@@ -1,11 +1,11 @@
-package com.github.maxopoly.Emray.skills;
+package com.github.maxopoly.SkilUp.skills;
 
 import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import com.github.maxopoly.Emray.rewards.AbstractReward;
+import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class Skill {
 	private AbstractReward[] rewards;

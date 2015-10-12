@@ -1,10 +1,10 @@
-package com.github.maxopoly.Emray.listeners.effects;
+package com.github.maxopoly.SkilUp.listeners.effects;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 
-import com.github.maxopoly.Emray.rewards.AbstractReward;
+import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class EffectBlockBreakListener {
 

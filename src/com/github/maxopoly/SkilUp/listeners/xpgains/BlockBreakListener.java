@@ -1,10 +1,10 @@
-package com.github.maxopoly.Emray.listeners.xpgains;
+package com.github.maxopoly.SkilUp.listeners.xpgains;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 
-import com.github.maxopoly.Emray.skills.Skill;
+import com.github.maxopoly.SkilUp.skills.Skill;
 
 public class BlockBreakListener extends AbstractXPListener {
 

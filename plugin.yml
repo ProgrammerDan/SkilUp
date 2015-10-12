@@ -1,6 +1,6 @@
-name: DankMeme
+name: SkilUp
 version: 1.0
 author: [Maxopoly]
-main: com.github.maxopoly.DankMeme
+main: com.github.maxopoly.SkilUp.SkilUp
 commands:
 permissions:

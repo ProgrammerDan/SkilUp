@@ -1,9 +1,9 @@
-package com.github.maxopoly.Emray.rewards;
+package com.github.maxopoly.SkilUp.rewards;
 
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.Emray.skills.Skill;
+import com.github.maxopoly.SkilUp.skills.Skill;
 
 public class DropReward extends AbstractReward<Location> {
 

@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.github.maxopoly</groupId>
-	<artifactId>DankMeme</artifactId>
+	<artifactId>SkilUp</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 
-	<name>DankMeme</name>
-	<url>https://github.com/Maxopoly/DankMeme</url>
+	<name>SkilUp</name>
+	<url>https://github.com/Maxopoly/SkilUp</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -1,16 +1,16 @@
-package com.github.maxopoly.Emray.commands;
+package com.github.maxopoly.SkilUp.commands;
 
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
-import com.github.maxopoly.Emray.Emray;
+import com.github.maxopoly.SkilUp.SkilUp;
 
 public abstract class AbstractCommand {
-	protected final Emray plugin;
+	protected final SkilUp plugin;
 	protected final String name;
 
-	public AbstractCommand(Emray instance, String commandName) {
+	public AbstractCommand(SkilUp instance, String commandName) {
 		plugin = instance;
 		name = commandName;
 	}

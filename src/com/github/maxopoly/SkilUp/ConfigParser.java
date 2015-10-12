@@ -1,13 +1,13 @@
-package com.github.maxopoly.Emray;
+package com.github.maxopoly.SkilUp;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-import static com.github.maxopoly.Emray.Emray.sendConsoleMessage;
+import static com.github.maxopoly.SkilUp.SkilUp.sendConsoleMessage;
 
 public class ConfigParser {
-	Emray plugin;
+	SkilUp plugin;
 
-	ConfigParser(Emray plugin) {
+	ConfigParser(SkilUp plugin) {
 		this.plugin = plugin;
 	}
 

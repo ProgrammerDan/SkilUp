@@ -1,17 +1,17 @@
-package com.github.maxopoly.Emray.listeners.logging;
+package com.github.maxopoly.SkilUp.listeners.logging;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.github.maxopoly.Emray.Emray;
-import com.github.maxopoly.Emray.EmrayManager;
+import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.SkilUpManager;
 
 public class LoginLogoutListener implements Listener {
-	EmrayManager em;
+	SkilUpManager em;
 
-	LoginLogoutListener(Emray plugin) {
+	LoginLogoutListener(SkilUp plugin) {
 		plugin.getServer().getPluginManager()
 		.registerEvents(this, plugin);
 		em = plugin.getManager();

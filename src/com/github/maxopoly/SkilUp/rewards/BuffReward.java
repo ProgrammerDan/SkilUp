@@ -1,9 +1,9 @@
-package com.github.maxopoly.Emray.rewards;
+package com.github.maxopoly.SkilUp.rewards;
 
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
-import com.github.maxopoly.Emray.skills.Skill;
+import com.github.maxopoly.SkilUp.skills.Skill;
 
 public class BuffReward extends AbstractReward<Player> {
 	PotionEffect pe;

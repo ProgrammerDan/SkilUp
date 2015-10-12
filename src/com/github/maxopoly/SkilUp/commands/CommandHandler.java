@@ -1,4 +1,4 @@
-package com.github.maxopoly.Emray.commands;
+package com.github.maxopoly.SkilUp.commands;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,13 +8,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import com.github.maxopoly.Emray.Emray;
+import com.github.maxopoly.SkilUp.SkilUp;
 
 public class CommandHandler implements CommandExecutor {
-	private Emray plugin;
+	private SkilUp plugin;
 	HashMap<String, AbstractCommand> commands = new HashMap<String, AbstractCommand>();
 
-	public CommandHandler(Emray instance) {
+	public CommandHandler(SkilUp instance) {
 		plugin = instance;
 
 		plugin.getCommand("em").setExecutor(this);

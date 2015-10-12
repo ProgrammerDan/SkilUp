@@ -1,15 +1,15 @@
-package com.github.maxopoly.Emray;
+package com.github.maxopoly.SkilUp;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.github.maxopoly.Emray.commands.CommandHandler;
+import com.github.maxopoly.SkilUp.commands.CommandHandler;
 
-public class Emray extends JavaPlugin {
+public class SkilUp extends JavaPlugin {
 	private CommandHandler commandHandler;
-	private static Emray plugin;
-	private static EmrayManager manager;
+	private static SkilUp plugin;
+	private static SkilUpManager manager;
 
 	@Override
 	public void onEnable() {
@@ -32,11 +32,11 @@ public class Emray extends JavaPlugin {
 		plugin.getLogger().info("[Emray] " + message);
 	}
 
-	public static EmrayManager getManager() {
+	public static SkilUpManager getManager() {
 		return manager;
 	}
 	
-	public static Emray getPlugin() {
+	public static SkilUp getPlugin() {
 		return plugin;
 	}
 

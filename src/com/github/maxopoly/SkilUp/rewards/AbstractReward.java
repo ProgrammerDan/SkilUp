@@ -1,10 +1,10 @@
-package com.github.maxopoly.Emray.rewards;
+package com.github.maxopoly.SkilUp.rewards;
 
 import java.util.Random;
 
 import org.bukkit.entity.Player;
 
-import com.github.maxopoly.Emray.skills.Skill;
+import com.github.maxopoly.SkilUp.skills.Skill;
 
 public abstract class AbstractReward<D> {
 

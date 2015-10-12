@@ -1,4 +1,4 @@
-package com.github.maxopoly.Emray;
+package com.github.maxopoly.SkilUp;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -7,13 +7,13 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import com.github.maxopoly.Emray.skills.PlayerXPStatus;
-import com.github.maxopoly.Emray.skills.Skill;
+import com.github.maxopoly.SkilUp.skills.PlayerXPStatus;
+import com.github.maxopoly.SkilUp.skills.Skill;
 
-public class EmrayManager {
+public class SkilUpManager {
 	private HashMap<String, Skill> skills;
 
-	public EmrayManager() {
+	public SkilUpManager() {
 		skills = new HashMap<String, Skill>();
 	}
 

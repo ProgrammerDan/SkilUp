@@ -1,11 +1,11 @@
-package com.github.maxopoly.Emray.skills;
+package com.github.maxopoly.SkilUp.skills;
 
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
-import com.github.maxopoly.Emray.Emray;
-import com.github.maxopoly.Emray.rewards.AbstractReward;
+import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class PlayerXPStatus {
 
@@ -21,7 +21,7 @@ public class PlayerXPStatus {
 	public PlayerXPStatus(Skill skill, UUID playerUUID, int level, int currentXP) {
 		this.skill = skill;
 		this.playerUUID = playerUUID;
-		this.player = Emray.getPlugin().getServer().getPlayer(playerUUID);
+		this.player = SkilUp.getPlugin().getServer().getPlayer(playerUUID);
 		this.level = level;
 		this.currentXP = currentXP;
 		totalXPForLvlUp = recalculateXPNeeded(level);
