@@ -2,11 +2,12 @@ package com.github.maxopoly.SkilUp.listeners.effects;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
-public class EffectBlockBreakListener {
+public class EffectBlockBreakListener implements Listener {
 
 	private Material material;
 	private Integer data;
@@ -25,10 +26,10 @@ public class EffectBlockBreakListener {
 			if (material == null || material == e.getBlock().getType()) {
 				if (data == null || data == e.getBlock().getData()) {
 					switch (reward.getRequiredData()) {
-					case LOCATION:
+					case DROP:
 						reward.applyEffect(e.getBlock().getLocation());
 						break;
-					case PLAYER:
+					case BUFF:
 						reward.applyEffect(e.getPlayer());
 						break;
 					default:

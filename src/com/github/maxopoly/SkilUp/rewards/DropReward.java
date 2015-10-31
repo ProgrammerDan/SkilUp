@@ -12,7 +12,7 @@ public class DropReward extends AbstractReward<Location> {
 	public DropReward(Skill skill, int requiredLevel, int index, double chance,
 			ItemStack is) {
 		super(skill, requiredLevel, index, chance,
-				RequiredDataForReward.LOCATION);
+				RewardType.DROP);
 		this.is = is;
 	}
 

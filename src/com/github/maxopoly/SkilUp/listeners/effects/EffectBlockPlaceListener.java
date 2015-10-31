@@ -2,12 +2,13 @@ package com.github.maxopoly.SkilUp.listeners.effects;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
-public class EffectBlockPlaceListener {
+public class EffectBlockPlaceListener implements Listener {
 	private Material material;
 	private Integer durability;
 	private AbstractReward reward;
@@ -20,23 +21,25 @@ public class EffectBlockPlaceListener {
 		this.reward = reward;
 		this.lore = lore;
 	}
-	
+
 	@EventHandler
 	public void catchEvent(BlockPlaceEvent e) {
 		if (reward.deservesReward(e.getPlayer())) {
 			ItemStack hand = e.getItemInHand();
 			if (material == null || material == hand.getType()) {
 				if (durability == null || durability == hand.getDurability()) {
-					if (lore == null || (hand.hasItemMeta() && hand.getItemMeta().getLore().equals(lore))) {
+					if (lore == null
+							|| (hand.hasItemMeta() && hand.getItemMeta()
+									.getLore().equals(lore))) {
 						switch (reward.getRequiredData()) {
-						case LOCATION:
+						case DROP:
 							reward.applyEffect(e.getBlock().getLocation());
 							break;
-						case PLAYER:
+						case BUFF:
 							reward.applyEffect(e.getPlayer());
 							break;
 						default:
-							//should never happen
+							// should never happen
 						}
 					}
 				}

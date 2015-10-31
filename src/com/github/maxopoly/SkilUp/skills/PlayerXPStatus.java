@@ -1,5 +1,7 @@
 package com.github.maxopoly.SkilUp.skills;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
@@ -15,7 +17,7 @@ public class PlayerXPStatus {
 	private UUID playerUUID;
 	private Skill skill;
 	private Boolean[] rewards;
-	private boolean onXPBar;
+	private static final Map<UUID, PlayerXPStatus> onXPBar = new HashMap<UUID, PlayerXPStatus>();
 	private Player player;
 
 	public PlayerXPStatus(Skill skill, UUID playerUUID, int level, int currentXP) {
@@ -107,20 +109,33 @@ public class PlayerXPStatus {
 	 * @return Whether the progress of this skill is shown on the XP bar right
 	 *         now
 	 */
-	public boolean getOnXPBar() {
-		return onXPBar;
+	public boolean isOnXPBar() {
+		return onXPBar.get(playerUUID) == this;
 	}
 
 	/**
-	 * Sets whether this skill is shown on the bar right now. If it is set to
+	 * Which xp status is currently shown on the given players bar
+	 * 
+	 * @param uuid
+	 *            of the player
+	 * @return The XP status currently shown or null if no data on the player
+	 *         exists currently
+	 */
+	public PlayerXPStatus getOnXPBar(UUID uuid) {
+		return onXPBar.get(uuid);
+	}
+
+	/**
+	 * Sets whether this status is shown on the bar right now. If it is set to
 	 * true the bar will also get updated
 	 * 
 	 * @param onXPBar
 	 *            Whether this status is now shown on the players XP bar
 	 */
-	public void setOnXPBar(boolean onXPBar) {
-		if (this.onXPBar = onXPBar) {
-			updateXPBar();
+	public static void setOnXPBar(PlayerXPStatus pxps) {
+		if (onXPBar.get(pxps.getPlayerUUID()) != pxps) {
+			onXPBar.put(pxps.getPlayerUUID(), pxps);
+			pxps.updateXPBar();
 		}
 	}
 
@@ -189,10 +204,10 @@ public class PlayerXPStatus {
 	 * level and his current XP
 	 */
 	public void lvlUp() {
-		skill.shinyParticles();
 		level++;
 		currentXP = currentXP - totalXPForLvlUp;
 		skill.checkForReward();
+		skill.fancyStuff(playerUUID, level);
 		totalXPForLvlUp = recalculateXPNeeded(level);
 		checkForLvlUp();
 	}

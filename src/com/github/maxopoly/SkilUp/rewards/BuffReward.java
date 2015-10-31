@@ -6,11 +6,11 @@ import org.bukkit.potion.PotionEffect;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 public class BuffReward extends AbstractReward<Player> {
-	PotionEffect pe;
+	private PotionEffect pe;
 
-	BuffReward(Skill skill, int requiredLevel, int index, double chance,
+	public BuffReward(Skill skill, int requiredLevel, int index, double chance,
 			PotionEffect pe) {
-		super(skill, requiredLevel, index, chance, RequiredDataForReward.PLAYER);
+		super(skill, requiredLevel, index, chance, RewardType.BUFF);
 		this.pe = pe;
 	}
 

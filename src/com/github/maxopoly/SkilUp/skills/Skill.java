@@ -1,20 +1,24 @@
 package com.github.maxopoly.SkilUp.skills;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
+import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class Skill {
-	private AbstractReward[] rewards;
+	private ArrayList <AbstractReward> rewards;
 	private String skillName;
+	private String lvlUpMsg;
 	private HashMap<UUID, PlayerXPStatus> playerXP;
 
-	public Skill(String skillName, AbstractReward[] rewards) {
+	public Skill(String skillName, ArrayList <AbstractReward> rewards, String lvlUpMsg) {
 		this.skillName = skillName;
 		this.rewards = rewards;
+		this.lvlUpMsg = lvlUpMsg.replaceAll("%SKILL%", skillName);
 		playerXP = new HashMap<UUID, PlayerXPStatus>();
 	}
 
@@ -68,21 +72,23 @@ public class Skill {
 	 * @return The reward of this skill with the given index
 	 */
 	public AbstractReward getReward(int i) {
-		return rewards[i];
+		return rewards.get(i);
 	}
 	
 	/**
 	 * @return All the rewards for this skill
 	 */
-	public AbstractReward [] getRewards() {
+	public ArrayList <AbstractReward> getRewards() {
 		return rewards;
 	}
 
 	/**
-	 * Plays some cool particle effects
+	 * Plays some cool particle effects and sends a message to the player
 	 */
-	public void shinyParticles() {
-		// TODO
+	public void fancyStuff(UUID uuid, int level) {
+		Player p = SkilUp.getPlugin().getServer().getPlayer(uuid);
+		p.sendMessage(lvlUpMsg.replace("%LEVEL%", String.valueOf(level)));
+		// TODO Add particles
 	}
 
 	public void checkForReward() {

@@ -23,5 +23,9 @@ public abstract class AbstractXPListener implements Listener {
 		skill.getStatus(player).giveXP(xp);
 	}
 	
+	protected void giveXP(Player player, int xp) {
+		skill.getStatus(player).giveXP(xp);
+	}
+	
 
 }
