@@ -2,18 +2,20 @@ package com.github.maxopoly.SkilUp;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import vg.civcraft.mc.civmodcore.ACivMod;
 
 import com.github.maxopoly.SkilUp.commands.CommandHandler;
 
-public class SkilUp extends JavaPlugin {
-	private CommandHandler commandHandler;
+public class SkilUp extends ACivMod {
 	private static SkilUp plugin;
 	private static SkilUpManager manager;
+	private CommandHandler commandHandler;
 
 	@Override
 	public void onEnable() {
-		commandHandler = new CommandHandler(this);
+		super.onEnable();
+		commandHandler = new CommandHandler();
 		plugin = this;
 	}
 
@@ -22,10 +24,14 @@ public class SkilUp extends JavaPlugin {
 
 	}
 
+	protected String getPluginName() {
+		return "SkilUp";
+	}
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
 			String[] args) {
-		return commandHandler.onCommand(sender, cmd, label, args);
+		return commandHandler.execute(sender, cmd, args);
 	}
 
 	public static void sendConsoleMessage(String message) {
@@ -35,7 +41,7 @@ public class SkilUp extends JavaPlugin {
 	public static SkilUpManager getManager() {
 		return manager;
 	}
-	
+
 	public static SkilUp getPlugin() {
 		return plugin;
 	}

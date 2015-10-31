@@ -1,61 +1,59 @@
 package com.github.maxopoly.SkilUp.commands;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import com.github.maxopoly.SkilUp.SkilUp;
+import vg.civcraft.mc.civmodcore.command.Command;
 
-public class CommandHandler implements CommandExecutor {
-	private SkilUp plugin;
-	HashMap<String, AbstractCommand> commands = new HashMap<String, AbstractCommand>();
+import com.github.maxopoly.SkilUp.commands.commands.SkilUpMenu;
 
-	public CommandHandler(SkilUp instance) {
-		plugin = instance;
+public class CommandHandler {
+	private Map<String, Command> commands = new HashMap<String, Command>();
 
-		plugin.getCommand("em").setExecutor(this);
-
-		registerCommands(new AbstractCommand[] {});
+	public void registerCommands() {
+		addCommands(new SkilUpMenu("Menu"));
 	}
 
-	private void registerCommands(AbstractCommand[] abstractCommands) {
+	private void addCommands(Command command) {
+		commands.put(command.getIdentifier().toLowerCase(), command);
+	}
 
-		for (AbstractCommand abstractCommand : abstractCommands) {
-			commands.put(abstractCommand.getName(), abstractCommand);
-			List<String> aliases = abstractCommand.getAliases();
-			if (abstractCommand.getAliases() != null) {
-				for (String alias : aliases) {
-					commands.put(alias, abstractCommand);
-				}
+	public boolean execute(CommandSender sender,
+			org.bukkit.command.Command cmd, String[] args) {
+		if (commands.containsKey(cmd.getName().toLowerCase())) {
+			Command command = commands.get(cmd.getName().toLowerCase());
+			if (args.length < command.getMinArguments()
+					|| args.length > command.getMaxArguments()) {
+				helpPlayer(command, sender);
+				return true;
 			}
+			command.execute(sender, args);
 		}
+		return true;
 	}
 
-	public boolean onCommand(CommandSender sender, Command cmd, String label,
-			String[] args) {
-
-		if (args.length == 0 || !commands.containsKey(args[0].toLowerCase()))
-			return false;
-
-		AbstractCommand abstractCommand = commands.get(args[0].toLowerCase());
-
-		if (abstractCommand.getPermission() != null
-				&& !sender.hasPermission(abstractCommand.getPermission())) {
-			sender.sendMessage("You don't have the permission to use this command!");
-			return true;
+	public List<String> complete(CommandSender sender,
+			org.bukkit.command.Command cmd, String[] args) {
+		if (commands.containsKey(cmd.getName().toLowerCase())) {
+			Command command = commands.get(cmd.getName().toLowerCase());
+			return command.tabComplete(sender, args);
 		}
+		return null;
+	}
 
-		if (abstractCommand.onCommand(sender,
-				Arrays.asList(args).subList(1, args.length)) == false
-				&& abstractCommand.getUsage() != null) {
-			sender.sendMessage("The correct usage is"
-					+ abstractCommand.getUsage());
-		}
-
-		return true;
+	public void helpPlayer(Command command, CommandSender sender) {
+		sender.sendMessage(new StringBuilder()
+				.append(ChatColor.RED + "Command: ").append(command.getName())
+				.toString());
+		sender.sendMessage(new StringBuilder()
+				.append(ChatColor.RED + "Description: ")
+				.append(command.getDescription()).toString());
+		sender.sendMessage(new StringBuilder()
+				.append(ChatColor.RED + "Usage: ").append(command.getUsage())
+				.toString());
 	}
 }
