@@ -1,5 +1,6 @@
 package com.github.maxopoly.SkilUp;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -55,19 +56,23 @@ public class SkilUpManager {
 	 */
 	public void playerFirstLogin(Player p) {
 		HashMap<String, Skill> temp = new HashMap<String, Skill>();
-		for (Map.Entry <String,Skill> skillEntry : skills.entrySet()) {
-			PlayerXPStatus pxps = new PlayerXPStatus(skillEntry.getValue(), p, 0, 0);
+		for (Map.Entry<String, Skill> skillEntry : skills.entrySet()) {
+			PlayerXPStatus pxps = new PlayerXPStatus(skillEntry.getValue(), p,
+					0, 0);
 			skillEntry.getValue().addXPStatus(pxps);
 		}
 	}
-	
-	
+
 	public Skill getSkillByName(String skillName) {
-		return skills.get(skillName);
+		return skills.get(skillName.toLowerCase());
 	}
-	
+
 	public void addSkill(Skill skill) {
-		skills.put(skill.getName(),skill);
+		skills.put(skill.getName().toLowerCase(), skill);
+	}
+
+	public Collection<Skill> getSkills() {
+		return skills.values();
 	}
 
 }

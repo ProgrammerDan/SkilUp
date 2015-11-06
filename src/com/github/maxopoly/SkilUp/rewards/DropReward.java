@@ -5,20 +5,39 @@ import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.skills.Skill;
 
-public class DropReward extends AbstractReward<Location> {
+/**
+ * Drops a specific item stack as a reward
+ * 
+ * @author Maxopoly
+ *
+ */
+public class DropReward extends AbstractReward {
 
 	private ItemStack is;
 
 	public DropReward(Skill skill, int requiredLevel, int index, double chance,
-			ItemStack is) {
-		super(skill, requiredLevel, index, chance,
-				RewardType.DROP);
-		this.is = is;
+			String info, ItemStack itemRepresentation, String name,
+			ItemStack drop) {
+		super(skill, requiredLevel, index, chance, RewardType.DROP, info,
+				itemRepresentation, name);
+		this.is = drop;
 	}
 
-	public void applyEffect(Location loc) {
+	/**
+	 * Drops the itemstack of this instance at the location, which was given as
+	 * the first parameter
+	 */
+	public void applyEffect(Object... data) {
+		Location loc = (Location) data[0];
 		if (rollForApplying()) {
 			loc.getWorld().dropItemNaturally(loc, is);
 		}
+	}
+
+	/**
+	 * @return Which item stack is dropped by this instance
+	 */
+	public ItemStack getDrop() {
+		return is;
 	}
 }

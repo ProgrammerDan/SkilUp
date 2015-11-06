@@ -4,22 +4,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class Skill {
-	private ArrayList <AbstractReward> rewards;
+	private ArrayList<AbstractReward> rewards;
 	private String skillName;
 	private String lvlUpMsg;
 	private HashMap<UUID, PlayerXPStatus> playerXP;
+	private ItemStack itemRepresentation;
 
-	public Skill(String skillName, ArrayList <AbstractReward> rewards, String lvlUpMsg) {
+	public Skill(String skillName, ArrayList<AbstractReward> rewards,
+			String lvlUpMsg, ItemStack itemRepresentation) {
 		this.skillName = skillName;
 		this.rewards = rewards;
 		this.lvlUpMsg = lvlUpMsg.replaceAll("%SKILL%", skillName);
 		playerXP = new HashMap<UUID, PlayerXPStatus>();
+		this.itemRepresentation = itemRepresentation;
 	}
 
 	/**
@@ -74,11 +79,11 @@ public class Skill {
 	public AbstractReward getReward(int i) {
 		return rewards.get(i);
 	}
-	
+
 	/**
 	 * @return All the rewards for this skill
 	 */
-	public ArrayList <AbstractReward> getRewards() {
+	public ArrayList<AbstractReward> getRewards() {
 		return rewards;
 	}
 
@@ -89,6 +94,13 @@ public class Skill {
 		Player p = SkilUp.getPlugin().getServer().getPlayer(uuid);
 		p.sendMessage(lvlUpMsg.replace("%LEVEL%", String.valueOf(level)));
 		// TODO Add particles
+	}
+
+	/**
+	 * @return Which item should be used in the GUI to represent this skill
+	 */
+	public ItemStack getItemRepresentation() {
+		return itemRepresentation;
 	}
 
 	public void checkForReward() {

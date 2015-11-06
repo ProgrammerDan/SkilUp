@@ -3,10 +3,11 @@ package com.github.maxopoly.SkilUp.rewards;
 import java.util.Random;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.skills.Skill;
 
-public abstract class AbstractReward<D> {
+public abstract class AbstractReward {
 
 	public enum RewardType {
 		BUFF, DROP;
@@ -18,16 +19,29 @@ public abstract class AbstractReward<D> {
 	private double chance;
 	private static Random rng = new Random();
 	private RewardType rewardType;
+	private String info;
+	private String name;
+	private ItemStack itemRepresentation;
 
 	public AbstractReward(Skill skill, int requiredLevel, int index,
-			double chance, RewardType rewardType) {
+			double chance, RewardType rewardType, String info,
+			ItemStack itemRepresentation, String name) {
 		this.skill = skill;
 		this.rewardType = rewardType;
 		this.requiredLevel = requiredLevel;
 		this.index = index;
 		this.chance = chance;
+		this.itemRepresentation = itemRepresentation;
+		this.info = info;
+		this.name = name;
 	}
 
+	/**
+	 * Takes the chance set for this reward into account and randomly decides
+	 * whether a reward should be given out
+	 * 
+	 * @return True if a reward should be given out, false if not
+	 */
 	public boolean rollForApplying() {
 		return rng.nextDouble() <= chance;
 	}
@@ -81,6 +95,36 @@ public abstract class AbstractReward<D> {
 		return rewardType;
 	}
 
-	public abstract void applyEffect(D data);
+	/**
+	 * @return General information or a description about this reward, which is
+	 *         sent to the player, if he selects this reward in the info gui
+	 */
+	public String getInfo() {
+		return info;
+	}
+
+	/**
+	 * @return Which itemstack should represent this reward in a GUI
+	 */
+	public ItemStack getItemRepresentation() {
+		return itemRepresentation;
+	}
+
+	/**
+	 * @return The name of this reward
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Each reward must implement this method to apply it's effect to the
+	 * player.
+	 * 
+	 * @param data
+	 *            Whatever kind of data is needed to apply the effect of this
+	 *            reward
+	 */
+	public abstract void applyEffect(Object... data);
 
 }
