@@ -1,10 +1,13 @@
 package com.github.maxopoly.SkilUp.listeners.effects;
 
+import java.util.logging.Level;
+
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class EffectBlockBreakListener implements Listener {
@@ -33,7 +36,14 @@ public class EffectBlockBreakListener implements Listener {
 						reward.applyEffect(e.getPlayer());
 						break;
 					default:
-						// should never happen
+						SkilUp.getPlugin()
+								.getLogger()
+								.log(Level.WARNING,
+										"Type "
+												+ reward.getRequiredData()
+														.toString()
+												+ " is not applicable for "
+												+ this.getClass().toString());
 					}
 				}
 			}
