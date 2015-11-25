@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventException;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
@@ -23,13 +24,16 @@ import com.github.maxopoly.SkilUp.listeners.effects.EffectBlockBreakListener;
 import com.github.maxopoly.SkilUp.listeners.effects.EffectBlockPlaceListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.BlockBreakListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.BlockPlaceListener;
+import com.github.maxopoly.SkilUp.listeners.xpgains.ConsumingListener;
+import com.github.maxopoly.SkilUp.listeners.xpgains.EntityKillListener;
+import com.github.maxopoly.SkilUp.listeners.xpgains.EntityTameListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.FishingListener;
+import com.github.maxopoly.SkilUp.listeners.xpgains.ItemBreakListener;
+import com.github.maxopoly.SkilUp.listeners.xpgains.ShearListener;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 import com.github.maxopoly.SkilUp.rewards.BuffReward;
 import com.github.maxopoly.SkilUp.rewards.DropReward;
 import com.github.maxopoly.SkilUp.skills.Skill;
-
-import static com.github.maxopoly.SkilUp.SkilUp.sendConsoleMessage;
 
 public class ConfigParser {
 	SkilUp plugin;
@@ -39,7 +43,7 @@ public class ConfigParser {
 	}
 
 	public SkilUpManager parseConfig() {
-		sendConsoleMessage("Initializing config");
+		plugin.info("Initializing config");
 		SkilUpManager manager = new SkilUpManager();
 		plugin.saveDefaultConfig();
 		plugin.reloadConfig();
@@ -49,6 +53,7 @@ public class ConfigParser {
 			Skill skill = parseSkill(skills.getConfigurationSection(key));
 			manager.addSkill(skill);
 		}
+		plugin.info("Finished parsing config and setup manager");
 		return manager;
 	}
 
@@ -68,6 +73,7 @@ public class ConfigParser {
 	}
 
 	public void parseXPListeners(Skill skill, ConfigurationSection cs) {
+		plugin.info("Parsing XP listeners for " + skill.getName());
 		for (String key : cs.getKeys(false)) {
 			ConfigurationSection current = cs.getConfigurationSection(key);
 			String type = current.getString("type");
@@ -80,7 +86,11 @@ public class ConfigParser {
 				int xpbp = current.getInt("xp");
 				BlockPlaceListener bpl = new BlockPlaceListener(skill, xpbp,
 						mat, durability, lore);
-				registerListener(bpl);
+				plugin.info("Parsed blockplace listener, material:" + mat != null ? mat
+						.name()
+						: "" + ",durability:" + durability != null ? durability
+								.toString() : "" + ",lore:" + lore + ",xp:"
+								+ String.valueOf(xpbp));
 				break;
 			case "BLOCKBREAK":
 				Material mate = Material.getMaterial(current
@@ -89,25 +99,102 @@ public class ConfigParser {
 				int xpbb = current.getInt("xp");
 				BlockBreakListener bbl = new BlockBreakListener(skill, xpbb,
 						mate, blockType);
-				registerListener(bbl);
+				plugin.info("Parsed blockbreak listener, material:" + mate != null ? mate
+						.name()
+						: "" + ",blockType:" + blockType != null ? blockType
+								.toString() : "" + ",xp" + String.valueOf(xpbb));
 				break;
 			case "FISHING":
 				HashMap<PlayerFishEvent.State, Integer> xpfish = new HashMap<PlayerFishEvent.State, Integer>();
-				Integer caughtEntity = integerNullCheck(current,
-						"CAUGHT_ENTITY");
-				Integer caughtFish = integerNullCheck(current, "CAUGHT_FISH");
-				Integer failedAttempt = integerNullCheck(current,
-						"FAILED_ATTEMPT");
-				Integer fishing = integerNullCheck(current, "FISHING");
-				Integer inGround = integerNullCheck(current, "IN_GROUND");
-				xpfish.put(PlayerFishEvent.State.CAUGHT_ENTITY, caughtEntity);
-				xpfish.put(PlayerFishEvent.State.CAUGHT_FISH, caughtFish);
-				xpfish.put(PlayerFishEvent.State.FAILED_ATTEMPT, failedAttempt);
-				xpfish.put(PlayerFishEvent.State.FISHING, fishing);
-				xpfish.put(PlayerFishEvent.State.IN_GROUND, inGround);
+				for (String fishKey : current.getKeys(false)) {
+					if (!fishKey.equals("type")) {
+						ConfigurationSection currentFishSection = current
+								.getConfigurationSection(fishKey);
+						PlayerFishEvent.State currentState = PlayerFishEvent.State
+								.valueOf(currentFishSection.getString("state"));
+						xpfish.put(currentState,
+								currentFishSection.getInt("xp"));
+						plugin.info("Parsed fishing listener, state:"
+								+ currentState.toString() + ",xp:"
+								+ currentFishSection.getString("xp"));
+					}
+				}
 				FishingListener fl = new FishingListener(skill, xpfish);
-				registerListener(fl);
 				break;
+			case "ENTITYKILL":
+				HashMap<EntityType, Integer> killXP = new HashMap<EntityType, Integer>();
+				for (String killKey : current.getKeys(false)) {
+					if (!killKey.equals("type")) {
+						ConfigurationSection currentKillSection = current
+								.getConfigurationSection(killKey);
+						EntityType killType = EntityType
+								.valueOf(currentKillSection.getString("type"));
+						killXP.put(killType, currentKillSection.getInt("xp"));
+						plugin.info("Parsed entity kill listener, type:"
+								+ killType.toString() + ",xp:"
+								+ currentKillSection.getString("xp"));
+					}
+				}
+				EntityKillListener ekl = new EntityKillListener(skill, killXP);
+				break;
+			case "TAME":
+				HashMap<EntityType, Integer> tameXP = new HashMap<EntityType, Integer>();
+				for (String tameKey : current.getKeys(false)) {
+					ConfigurationSection currentKillSection = current
+							.getConfigurationSection(tameKey);
+					EntityType tameType = EntityType.valueOf(currentKillSection
+							.getString("type"));
+					tameXP.put(tameType, currentKillSection.getInt("xp"));
+					plugin.info("Parsed entity tame listener, type:"
+							+ tameType.toString() + ",xp:"
+							+ currentKillSection.getString("xp"));
+				}
+				EntityTameListener etl = new EntityTameListener(skill, tameXP);
+				break;
+			case "ITEMBREAK":
+				Material brokenMat = Material.getMaterial(current
+						.getString("material"));
+				String breakLore = current.getString("lore");
+				int itemBreakXP = current.getInt("xp");
+				plugin.info("Parsed item break listener, material:" + brokenMat != null ? brokenMat
+						.toString() : "" + ",lore:" + breakLore + ",xp:"
+						+ String.valueOf(itemBreakXP));
+				ItemBreakListener ibl = new ItemBreakListener(skill,
+						itemBreakXP, brokenMat, breakLore);
+				break;
+			case "SHEAR":
+				HashMap<EntityType, Integer> shearXP = new HashMap<EntityType, Integer>();
+				for (String shearKey : current.getKeys(false)) {
+					ConfigurationSection currentKillSection = current
+							.getConfigurationSection(shearKey);
+					EntityType shearType = EntityType
+							.valueOf(currentKillSection.getString("type"));
+					shearXP.put(shearType, currentKillSection.getInt("xp"));
+					plugin.info("Parsed entity tame listener, type:"
+							+ shearType.toString() + ",xp:"
+							+ currentKillSection.getString("xp"));
+				}
+				ShearListener sl = new ShearListener(skill, shearXP);
+				break;
+			case "CONSUME":
+				Material eatMat = Material.getMaterial(current
+						.getString("material"));
+				Integer durabilityEaten = integerNullCheck(current,
+						"durability");
+				String loreEaten = current.getString("lore");
+				int xpconsume = current.getInt("xp");
+				ConsumingListener cl = new ConsumingListener(skill, xpconsume,
+						eatMat, durabilityEaten, loreEaten);
+				plugin.info("Parsed consumption listener, material:" + eatMat != null ? eatMat
+						.name()
+						: "" + ",durability:" + durabilityEaten != null ? durabilityEaten
+								.toString() : "" + ",lore:" + loreEaten
+								+ ",xp:" + String.valueOf(xpconsume));
+				break;
+			default:
+				plugin.severe(type
+						+ " is not a valid listener type, invalid config");
+
 			}
 		}
 
@@ -259,8 +346,9 @@ public class ConfigParser {
 				result += 20 * 3600 * 24 * days;
 				length = String.valueOf(days).length() + 1;
 			default:
-				ConfigurationException e = new ConfigurationException(arg.charAt(arg.length() - 1)
-						+ " is not a valid time character");
+				ConfigurationException e = new ConfigurationException(
+						arg.charAt(arg.length() - 1)
+								+ " is not a valid time character");
 				e.printStackTrace();
 			}
 			arg = arg.substring(0, arg.length() - length);

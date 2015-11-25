@@ -34,10 +34,6 @@ public class SkilUp extends ACivMod {
 		return commandHandler.execute(sender, cmd, args);
 	}
 
-	public static void sendConsoleMessage(String message) {
-		plugin.getLogger().info("[Emray] " + message);
-	}
-
 	public static SkilUpManager getManager() {
 		return manager;
 	}

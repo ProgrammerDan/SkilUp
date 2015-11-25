@@ -1,6 +1,5 @@
 package com.github.maxopoly.SkilUp.listeners.xpgains;
 
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
@@ -22,10 +21,4 @@ public abstract class AbstractXPListener implements Listener {
 	protected void giveXP(Player player) {
 		skill.getStatus(player).giveXP(xp);
 	}
-	
-	protected void giveXP(Player player, int xp) {
-		skill.getStatus(player).giveXP(xp);
-	}
-	
-
 }

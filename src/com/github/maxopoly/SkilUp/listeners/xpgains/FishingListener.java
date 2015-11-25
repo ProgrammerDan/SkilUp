@@ -7,22 +7,17 @@ import org.bukkit.event.player.PlayerFishEvent;
 
 import com.github.maxopoly.SkilUp.skills.Skill;
 
-public class FishingListener extends AbstractXPListener {
-	private HashMap<PlayerFishEvent.State, Integer> xps;
+public class FishingListener extends
+		AbstractMappedXPListener<PlayerFishEvent.State> {
 
 	public FishingListener(Skill skill,
 			HashMap<PlayerFishEvent.State, Integer> xp) {
-		super(skill, 0); // 0 because this can give out different amounts of XP
-							// based on what's caught/not caught
-		this.xps = xp;
+		super(skill, xp);
 	}
 
 	@EventHandler
 	public void fishing(PlayerFishEvent e) {
-		Integer i = xps.get(e.getState());
-		if (i != null) {
-			giveXP(e.getPlayer(), i);
-		}
+		giveXP(e.getPlayer(), e.getState());
 	}
 
 }
