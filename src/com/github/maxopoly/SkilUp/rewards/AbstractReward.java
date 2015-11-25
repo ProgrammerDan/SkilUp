@@ -8,20 +8,15 @@ import org.bukkit.inventory.ItemStack;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 public abstract class AbstractReward {
-
-	public enum RewardType {
-		BUFF, DROP;
-	}
-
-	private int requiredLevel;
-	private int index;
-	private Skill skill;
-	private double chance;
-	private static Random rng = new Random();
-	private RewardType rewardType;
-	private String info;
-	private String name;
-	private ItemStack itemRepresentation;
+	protected int requiredLevel;
+	protected int index;
+	protected Skill skill;
+	protected double chance;
+	protected static Random rng = new Random();
+	protected RewardType rewardType;
+	protected String info;
+	protected String name;
+	protected ItemStack itemRepresentation;
 
 	public AbstractReward(Skill skill, int requiredLevel, int index,
 			double chance, RewardType rewardType, String info,

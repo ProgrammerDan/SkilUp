@@ -3,6 +3,7 @@ package com.github.maxopoly.SkilUp.rewards;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 /**
@@ -18,7 +19,7 @@ public class DropReward extends AbstractReward {
 	public DropReward(Skill skill, int requiredLevel, int index, double chance,
 			String info, ItemStack itemRepresentation, String name,
 			ItemStack drop) {
-		super(skill, requiredLevel, index, chance, RewardType.DROP, info,
+		super(skill, requiredLevel, index, chance, RewardType.LOCATION, info,
 				itemRepresentation, name);
 		this.is = drop;
 	}
@@ -30,6 +31,8 @@ public class DropReward extends AbstractReward {
 	public void applyEffect(Object... data) {
 		Location loc = (Location) data[0];
 		if (rollForApplying()) {
+			SkilUp.getPlugin().debug(
+					"Dropped " + is.toString() + " at " + loc.toString());
 			loc.getWorld().dropItemNaturally(loc, is);
 		}
 	}
