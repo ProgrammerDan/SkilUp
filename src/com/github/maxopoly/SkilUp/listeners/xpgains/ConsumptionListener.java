@@ -7,11 +7,11 @@ import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.skills.Skill;
 
-public class ConsumingListener extends AbstractXPListener {
+public class ConsumptionListener extends AbstractXPListener {
 	private Material material;
 	private Integer durability;
 	private String lore;
-	public ConsumingListener(Skill skill, int xp, Material material,
+	public ConsumptionListener(Skill skill, int xp, Material material,
 			Integer durability, String lore) {
 		super(skill,xp);
 		

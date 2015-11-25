@@ -24,7 +24,7 @@ import com.github.maxopoly.SkilUp.listeners.effects.EffectBlockBreakListener;
 import com.github.maxopoly.SkilUp.listeners.effects.EffectBlockPlaceListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.BlockBreakListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.BlockPlaceListener;
-import com.github.maxopoly.SkilUp.listeners.xpgains.ConsumingListener;
+import com.github.maxopoly.SkilUp.listeners.xpgains.ConsumptionListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.EntityKillListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.EntityTameListener;
 import com.github.maxopoly.SkilUp.listeners.xpgains.FishingListener;
@@ -183,7 +183,7 @@ public class ConfigParser {
 						"durability");
 				String loreEaten = current.getString("lore");
 				int xpconsume = current.getInt("xp");
-				ConsumingListener cl = new ConsumingListener(skill, xpconsume,
+				ConsumptionListener cl = new ConsumptionListener(skill, xpconsume,
 						eatMat, durabilityEaten, loreEaten);
 				plugin.info("Parsed consumption listener, material:" + eatMat != null ? eatMat
 						.name()
