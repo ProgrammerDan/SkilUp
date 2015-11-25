@@ -21,7 +21,9 @@ public class SkilUpManager {
 	 * Saves the data of all players
 	 */
 	public void saveAllToDataBase() {
-		// TODO
+		for (Player p : SkilUp.getPlugin().getServer().getOnlinePlayers()) {
+			savePlayerDataToDataBase(p);
+		}
 	}
 
 	/**
@@ -31,6 +33,14 @@ public class SkilUpManager {
 	 *            The player whos data is saved
 	 */
 	public void savePlayerDataToDataBase(Player p) {
+		//TODO
+		for (Skill skill : skills.values()) { //for every skill
+			String skillname = skill.getName(); // save this
+			UUID uuid = p.getUniqueId(); // save this
+			PlayerXPStatus pxps = skill.getStatus(p);
+			int level = pxps.getLevel(); // save this
+			int currrentXP = pxps.getCurrentXP(); // save this
+		}
 
 	}
 
@@ -43,7 +53,16 @@ public class SkilUpManager {
 	 */
 	public boolean loadPlayerDataFromDataBase(Player p) {
 		// TODO
-		return true;
+		// for( ) //iterate over skills pulled from db
+		String skillName = null; // TODO
+		Skill skill = getSkillByName(skillName);
+		UUID playerUUID = null; // TODO
+		int level = 0; // TODO
+		int currentXP = 0; // TODO
+		PlayerXPStatus pxps = new PlayerXPStatus(skill, playerUUID, level,
+				currentXP);
+		skill.addXPStatus(pxps);
+		return true; // return false if data was not found
 	}
 
 	/**
