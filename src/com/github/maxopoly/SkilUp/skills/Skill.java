@@ -1,10 +1,9 @@
 package com.github.maxopoly.SkilUp.skills;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,13 +11,13 @@ import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class Skill {
-	private ArrayList<AbstractReward> rewards;
+	private List <AbstractReward> rewards;
 	private String skillName;
 	private String lvlUpMsg;
 	private HashMap<UUID, PlayerXPStatus> playerXP;
 	private ItemStack itemRepresentation;
 
-	public Skill(String skillName, ArrayList<AbstractReward> rewards,
+	public Skill(String skillName, List<AbstractReward> rewards,
 			String lvlUpMsg, ItemStack itemRepresentation) {
 		this.skillName = skillName;
 		this.rewards = rewards;
@@ -83,7 +82,7 @@ public class Skill {
 	/**
 	 * @return All the rewards for this skill
 	 */
-	public ArrayList<AbstractReward> getRewards() {
+	public List <AbstractReward> getRewards() {
 		return rewards;
 	}
 

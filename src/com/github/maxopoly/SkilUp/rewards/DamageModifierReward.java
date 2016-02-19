@@ -1,6 +1,8 @@
 package com.github.maxopoly.SkilUp.rewards;
 
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.skills.Skill;
@@ -15,22 +17,11 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 public class DamageModifierReward extends AbstractReward {
 	private double multiplier;
 
-	public DamageModifierReward(Skill skill, int requiredLevel, int index,
-			double chance, String info, ItemStack itemRepresentation,
-			String name, double multiplier) {
-		super(skill, requiredLevel, index, chance,
-				RewardType.ENTITYDAMAGEEVENT, info, itemRepresentation, name);
+	public DamageModifierReward(Skill skill, int requiredLevel, double chance,
+			String info, ItemStack itemRepresentation, String name,
+			double multiplier) {
+		super(skill, requiredLevel, chance, info, itemRepresentation, name);
 		this.multiplier = multiplier;
-	}
-
-	/**
-	 * EntityDamageEvent as only argument
-	 */
-	public void applyEffect(Object... data) {
-		EntityDamageEvent e = (EntityDamageEvent) data[0];
-		if (rollForApplying()) {
-			e.setDamage(e.getDamage() * multiplier);
-		}
 	}
 
 	/**
@@ -38,6 +29,12 @@ public class DamageModifierReward extends AbstractReward {
 	 */
 	public double getDamageMultiplier() {
 		return multiplier;
+	}
+	
+	public void listenerTriggered(Event e, Player p) {
+		EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
+		edbee.setDamage(edbee.getDamage() * multiplier);
+		//changes only raw damage, not the actual damage
 	}
 
 }

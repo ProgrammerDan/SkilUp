@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import vg.civcraft.mc.civmodcore.ACivMod;
 
 import com.github.maxopoly.SkilUp.commands.CommandHandler;
+import com.github.maxopoly.SkilUp.listeners.logging.LoginLogoutListener;
 
 public class SkilUp extends ACivMod {
 	private static SkilUp plugin;
@@ -17,6 +18,8 @@ public class SkilUp extends ACivMod {
 		super.onEnable();
 		commandHandler = new CommandHandler();
 		plugin = this;
+		manager = new ConfigParser(this).parseConfig();
+		plugin.getServer().getPluginManager().registerEvents(new LoginLogoutListener(this), this);
 	}
 
 	@Override

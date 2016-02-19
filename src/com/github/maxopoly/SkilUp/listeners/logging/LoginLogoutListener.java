@@ -9,9 +9,9 @@ import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.SkilUpManager;
 
 public class LoginLogoutListener implements Listener {
-	SkilUpManager em;
+	private SkilUpManager em;
 
-	LoginLogoutListener(SkilUp plugin) {
+	public LoginLogoutListener(SkilUp plugin) {
 		plugin.getServer().getPluginManager()
 		.registerEvents(this, plugin);
 		em = plugin.getManager();

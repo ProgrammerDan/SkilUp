@@ -12,9 +12,11 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 
 public class SkilUpManager {
 	private HashMap<String, Skill> skills;
+	private boolean useXPBar;
 
-	public SkilUpManager() {
+	public SkilUpManager(boolean useXPBar) {
 		skills = new HashMap<String, Skill>();
+		this.useXPBar = useXPBar;
 	}
 
 	/**
@@ -52,9 +54,10 @@ public class SkilUpManager {
 	 * @return true if the data was found and loaded, false if no data was found
 	 */
 	public boolean loadPlayerDataFromDataBase(Player p) {
+		return false;
 		// TODO
 		// for( ) //iterate over skills pulled from db
-		String skillName = null; // TODO
+		/*String skillName = null; // TODO
 		Skill skill = getSkillByName(skillName);
 		UUID playerUUID = null; // TODO
 		int level = 0; // TODO
@@ -62,7 +65,7 @@ public class SkilUpManager {
 		PlayerXPStatus pxps = new PlayerXPStatus(skill, playerUUID, level,
 				currentXP);
 		skill.addXPStatus(pxps);
-		return true; // return false if data was not found
+		return true; // return false if data was not found */
 	}
 
 	/**
@@ -91,6 +94,10 @@ public class SkilUpManager {
 
 	public Collection<Skill> getSkills() {
 		return skills.values();
+	}
+	
+	public boolean useXPBar() {
+		return useXPBar;
 	}
 
 }

@@ -3,6 +3,7 @@ package com.github.maxopoly.SkilUp.rewards;
 import java.util.HashMap;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.SkilUp;
@@ -11,10 +12,9 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 public class DirectItemReward extends AbstractReward {
 	private ItemStack is;
 
-	public DirectItemReward(Skill skill, int requiredLevel, int index,
-			double chance, String info, ItemStack itemRepresentation,
+	public DirectItemReward(Skill skill, int requiredLevel,	double chance, String info, ItemStack itemRepresentation,
 			String name, ItemStack drop) {
-		super(skill, requiredLevel, index, chance, RewardType.PLAYER, info,
+		super(skill, requiredLevel, chance, info,
 				itemRepresentation, name);
 		this.is = drop;
 	}
@@ -42,5 +42,9 @@ public class DirectItemReward extends AbstractReward {
 	 */
 	public ItemStack getDrop() {
 		return is;
+	}
+	
+	public void listenerTriggered(Event e, Player p) {
+		
 	}
 }

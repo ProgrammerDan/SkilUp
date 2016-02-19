@@ -60,8 +60,7 @@ public class MenuBuilder {
 
 	public void showSkillOverview(Player p) {
 		ClickableInventory ci = new ClickableInventory(
-				new ArrayList<Clickable>(), InventoryType.ENDER_CHEST,
-				"Click a skill for more information");
+				InventoryType.ENDER_CHEST, "Click a skill for more information");
 		ci.setSlot(exitIcon, 8);
 		int slot = 10;
 		for (Skill s : sm.getSkills()) {
@@ -87,8 +86,8 @@ public class MenuBuilder {
 	public void showSkillInfo(Player p, PlayerXPStatus pxps) {
 		final Skill s = pxps.getSkill();
 		ClickableInventory ci = new ClickableInventory(
-				new ArrayList<Clickable>(), InventoryType.ENDER_CHEST,
-				s.getName() + "  Level " + pxps.getLevel());
+				InventoryType.ENDER_CHEST, s.getName() + "  Level "
+						+ pxps.getLevel());
 		ci.setSlot(mainMenu, 0);
 		ci.setSlot(exitIcon, 8);
 		ci.setSlot(

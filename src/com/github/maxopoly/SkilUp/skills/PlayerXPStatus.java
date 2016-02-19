@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.github.maxopoly.SkilUp.SkilUp;
@@ -16,18 +17,30 @@ public class PlayerXPStatus {
 	private int totalXPForLvlUp;
 	private UUID playerUUID;
 	private Skill skill;
-	private Boolean[] rewards;
 	private static final Map<UUID, PlayerXPStatus> onXPBar = new HashMap<UUID, PlayerXPStatus>();
-	private Player player;
+
+	private static double overallMultiplier;
+	private static double logarithmicMultiplier;
+	private static double exponentialMultiplier;
+	private static double gradientFirstStage;
+	private static int equationChangeLevel;
+
+	public static void setXPMultipliers(double overallMultiplier,
+			double logarithmicMultiplier, double exponentialMultiplier,
+			double gradientFirstStage, int equationChangeLevel) {
+		PlayerXPStatus.overallMultiplier = overallMultiplier;
+		PlayerXPStatus.logarithmicMultiplier = logarithmicMultiplier;
+		PlayerXPStatus.gradientFirstStage = gradientFirstStage;
+		PlayerXPStatus.exponentialMultiplier = exponentialMultiplier;
+		PlayerXPStatus.equationChangeLevel = equationChangeLevel;
+	}
 
 	public PlayerXPStatus(Skill skill, UUID playerUUID, int level, int currentXP) {
 		this.skill = skill;
 		this.playerUUID = playerUUID;
-		this.player = SkilUp.getPlugin().getServer().getPlayer(playerUUID);
 		this.level = level;
 		this.currentXP = currentXP;
 		totalXPForLvlUp = recalculateXPNeeded(level);
-		rewards = calculateRewards();
 	}
 
 	public PlayerXPStatus(Skill skill, Player player, int level, int currentXP) {
@@ -70,13 +83,6 @@ public class PlayerXPStatus {
 	}
 
 	/**
-	 * @return The player this instance is associated with
-	 */
-	public Player getPlayer() {
-		return player;
-	}
-
-	/**
 	 * @return The amount of XP the player has on the current level
 	 */
 	public int getCurrentXP() {
@@ -94,7 +100,7 @@ public class PlayerXPStatus {
 	/**
 	 * @return The amount of XP the player needs to earn to reach the next level
 	 */
-	public int getXPForLvlUp() {
+	public int getXPMissingForLvlUp() {
 		return totalXPForLvlUp - currentXP;
 	}
 
@@ -145,8 +151,9 @@ public class PlayerXPStatus {
 	 */
 	public void updateXPBar() {
 		float progress = (float) currentXP / (float) totalXPForLvlUp;
-		player.setLevel(level);
-		player.setExp(progress);
+		Player p = Bukkit.getPlayer(playerUUID);
+		p.setLevel(level);
+		p.setExp(progress);
 
 	}
 
@@ -158,10 +165,15 @@ public class PlayerXPStatus {
 	 * @return The total amount of XP needed for the next level
 	 */
 	public int recalculateXPNeeded(int level) {
-		// TODO
-		// Hardcode a function here
-
-		return 0;
+		double result;
+		if (level < equationChangeLevel) {
+			result = level * gradientFirstStage;
+		} else {
+			result = overallMultiplier
+					* (exponentialMultiplier * Math.pow(level, 1 / 3) * Math
+							.log(logarithmicMultiplier * level));
+		}
+		return level;
 	}
 
 	/**
@@ -172,31 +184,10 @@ public class PlayerXPStatus {
 	 *            Amount of xp the player should gain
 	 */
 	public void giveXP(int xp) {
+		System.out.println("Giving "+ xp);
 		currentXP += xp;
 		checkForLvlUp();
-	}
-
-	/**
-	 * Recalculates which rewards the player deserves
-	 * 
-	 * @return Whether the player deserves each reward or not, the order is the
-	 *         same as in the skill's reward order, so this is consistent with
-	 *         the indices used
-	 * 
-	 * 
-	 */
-
-	public Boolean[] calculateRewards() {
-		Boolean[] reward = new Boolean[skill.getRewards().length];
-		int i = 0;
-		for (AbstractReward rew : skill.getRewards()) {
-			if (rew.getRequiredLevel() <= level) {
-				reward[i] = true;
-			} else {
-				reward[i] = false;
-			}
-		}
-		return reward;
+		updateXPBar();
 	}
 
 	/**
@@ -211,9 +202,4 @@ public class PlayerXPStatus {
 		totalXPForLvlUp = recalculateXPNeeded(level);
 		checkForLvlUp();
 	}
-
-	public boolean deservesReward(int i) {
-		return rewards[i];
-	}
-
 }

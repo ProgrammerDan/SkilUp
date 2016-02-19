@@ -1,33 +1,36 @@
-package com.github.maxopoly.SkilUp.listeners.xpgains;
+package com.github.maxopoly.SkilUp.listeners.abstractListeners;
+
+import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.SkilUp.skills.Skill;
+import com.github.maxopoly.SkilUp.ListenerUser;
 
-public class BlockPlaceListener extends AbstractXPListener {
+public class BlockPlaceListener extends AbstractListener {
 
 	private Material material;
 	private Integer durability;
-	private String lore;
+	private List <String> lore;
 	
-	public BlockPlaceListener(Skill skill, int xp, Material material,
-			Integer durability, String lore) {
-		super(skill, xp);
+	public BlockPlaceListener(ListenerUser listenerUser, Material material,
+			Integer durability, List <String> lore) {
+		super(listenerUser);
 		this.material = material;
 		this.durability = durability;
 		this.lore = lore;
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
 	public void catchEvent(BlockPlaceEvent e) {
 		ItemStack is = e.getItemInHand();
 		if (material == null || is.getType() == material) {
 			if (durability == null || durability == is.getDurability()) {
 				if (lore == null || (is.hasItemMeta() && is.getItemMeta().hasLore() && is.getItemMeta().getLore().equals(lore))) {
-					giveXP(e.getPlayer());
+					tellUser(e, e.getPlayer());
 				}
 			}
 		}
