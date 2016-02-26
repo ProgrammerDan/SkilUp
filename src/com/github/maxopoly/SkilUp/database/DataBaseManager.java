@@ -39,8 +39,8 @@ public class DataBaseManager {
 	public void prepareTables() {
 		for (Skill skill : manager.getSkills()) {
 			db.execute("create table if not exists skilup" + skill.getName()
-					+ "(uuid varchar(255) not null," + "level int not null,"
-					+ "xp int not null," + "primary key(uuid));");
+					+ "(uuid varchar(255) not null,level int not null,"
+					+ "xp int not null,primary key(uuid));");
 		}
 	}
 
@@ -60,6 +60,9 @@ public class DataBaseManager {
 	public boolean isConnected() {
 		if (!db.isConnected())
 			db.connect();
+		if (db.isConnected()) {
+			loadPreparedStatements();
+		}
 		return db.isConnected();
 	}
 

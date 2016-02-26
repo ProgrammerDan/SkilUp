@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebeaninternal.server.lib.sql.DataSourceException;
+import com.github.maxopoly.SkilUp.SkilUp;
 public class DataBase {
     private String host;
     private int port;
@@ -52,7 +52,8 @@ public class DataBase {
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (Exception ex) {
-            throw new DataSourceException("Failed to initialize JDBC driver.");
+            SkilUp.getPlugin().severe("Failed to initialize JDBC driver.");
+            return false;
         }
         try {
             connection = DriverManager.getConnection(jdbc);
@@ -113,8 +114,7 @@ public class DataBase {
             if (isConnected()) {
                 connection.prepareStatement(sql).executeUpdate();
             } else {
-                connect();
-                execute(sql);
+                SkilUp.getPlugin().severe("Could not execute sql statement, no connection to database " + sql);
             }
         } catch (SQLException ex) {
             this.logger.log(Level.SEVERE, "Could not execute SQL statement!", ex);
