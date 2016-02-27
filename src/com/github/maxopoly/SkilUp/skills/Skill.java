@@ -11,19 +11,21 @@ import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
 
 public class Skill {
-	private List <AbstractReward> rewards;
+	private List<AbstractReward> rewards;
 	private String skillName;
 	private String lvlUpMsg;
+	private int hourMultiplier;
 	private HashMap<UUID, PlayerXPStatus> playerXP;
 	private ItemStack itemRepresentation;
 
 	public Skill(String skillName, List<AbstractReward> rewards,
-			String lvlUpMsg, ItemStack itemRepresentation) {
+			String lvlUpMsg, ItemStack itemRepresentation, int hourMultiplier) {
 		this.skillName = skillName;
 		this.rewards = rewards;
 		this.lvlUpMsg = lvlUpMsg.replaceAll("%SKILL%", skillName);
 		playerXP = new HashMap<UUID, PlayerXPStatus>();
 		this.itemRepresentation = itemRepresentation;
+		this.hourMultiplier = hourMultiplier;
 	}
 
 	/**
@@ -82,7 +84,7 @@ public class Skill {
 	/**
 	 * @return All the rewards for this skill
 	 */
-	public List <AbstractReward> getRewards() {
+	public List<AbstractReward> getRewards() {
 		return rewards;
 	}
 
@@ -100,6 +102,17 @@ public class Skill {
 	 */
 	public ItemStack getItemRepresentation() {
 		return itemRepresentation;
+	}
+
+	/**
+	 * Each skill may have an individual multiplier to calculate the experience
+	 * needed to adjust the skills individuals balance. This value should
+	 * represent how much experience is gained on average in an hour
+	 * 
+	 * @return hourly multiplier for this skill
+	 */
+	public int getHourMultiplier() {
+		return hourMultiplier;
 	}
 
 	public void checkForReward() {

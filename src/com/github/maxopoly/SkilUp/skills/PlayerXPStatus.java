@@ -19,22 +19,6 @@ public class PlayerXPStatus {
 	private Skill skill;
 	private static final Map<UUID, PlayerXPStatus> onXPBar = new HashMap<UUID, PlayerXPStatus>();
 
-	private static double overallMultiplier;
-	private static double logarithmicMultiplier;
-	private static double exponentialMultiplier;
-	private static double gradientFirstStage;
-	private static int equationChangeLevel;
-
-	public static void setXPMultipliers(double overallMultiplier,
-			double logarithmicMultiplier, double exponentialMultiplier,
-			double gradientFirstStage, int equationChangeLevel) {
-		PlayerXPStatus.overallMultiplier = overallMultiplier;
-		PlayerXPStatus.logarithmicMultiplier = logarithmicMultiplier;
-		PlayerXPStatus.gradientFirstStage = gradientFirstStage;
-		PlayerXPStatus.exponentialMultiplier = exponentialMultiplier;
-		PlayerXPStatus.equationChangeLevel = equationChangeLevel;
-	}
-
 	public PlayerXPStatus(Skill skill, UUID playerUUID, int level, int currentXP) {
 		this.skill = skill;
 		this.playerUUID = playerUUID;
@@ -150,11 +134,13 @@ public class PlayerXPStatus {
 	 * this skill
 	 */
 	public void updateXPBar() {
+		if (!SkilUp.getManager().useXPBar()) {
+			return;
+		}
 		float progress = (float) currentXP / (float) totalXPForLvlUp;
 		Player p = Bukkit.getPlayer(playerUUID);
 		p.setLevel(level);
 		p.setExp(progress);
-
 	}
 
 	/**
@@ -165,15 +151,10 @@ public class PlayerXPStatus {
 	 * @return The total amount of XP needed for the next level
 	 */
 	public int recalculateXPNeeded(int level) {
-		double result;
-		if (level < equationChangeLevel) {
-			result = level * gradientFirstStage;
-		} else {
-			result = overallMultiplier
-					* (exponentialMultiplier * Math.pow(level, 1 / 3) * Math
-							.log(logarithmicMultiplier * level));
-		}
-		return level;
+		double result = (level + 1) * 4 / 3;
+		result /= (1 + (level + 1)/100);
+		result *= skill.getHourMultiplier();
+		return (int) result;
 	}
 
 	/**

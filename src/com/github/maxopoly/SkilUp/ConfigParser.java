@@ -14,6 +14,7 @@ import vg.civcraft.mc.civmodcore.itemHandling.ItemMap;
 import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parseItemMap;
 import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parsePotionEffects;
 
+import com.github.maxopoly.SkilUp.database.DataBaseManager;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.BlockBreakListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.BlockPlaceListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.ConsumptionListener;
@@ -25,14 +26,14 @@ import com.github.maxopoly.SkilUp.listeners.abstractListeners.FishingListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.ItemBreakListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.ShearListener;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
-import com.github.maxopoly.SkilUp.rewards.BuffReward;
 import com.github.maxopoly.SkilUp.rewards.DropReward;
 import com.github.maxopoly.SkilUp.skills.Skill;
 import com.github.maxopoly.SkilUp.skills.XPDistributer;
 
 public class ConfigParser {
-	SkilUp plugin;
+	private SkilUp plugin;
 	private String lvlUpMsg;
+	private DataBaseManager dbm;
 
 	ConfigParser(SkilUp plugin) {
 		this.plugin = plugin;
@@ -51,6 +52,13 @@ public class ConfigParser {
 			Skill skill = parseSkill(skills.getConfigurationSection(key));
 			manager.addSkill(skill);
 		}
+		ConfigurationSection dbStuff = config.getConfigurationSection("database");
+		String host = dbStuff.getString("host");
+		int port = dbStuff.getInt("port");
+		String db = dbStuff.getString("database_name");
+		String user = dbStuff.getString("user");
+		String password = dbStuff.getString("password");
+		dbm = new DataBaseManager(manager, host, port, db, user, password, plugin.getLogger());
 		plugin.info("Finished parsing config and setup manager");
 		return manager;
 	}
@@ -64,7 +72,8 @@ public class ConfigParser {
 		ItemStack representation = parseItemMap(
 				config.getConfigurationSection("item_representation"))
 				.getItemStackRepresentation().get(0);
-		Skill skill = new Skill(name, rewards, lvlUpMsg, representation);
+		int hourMultiplier = config.getInt("hour_multiplier");
+		Skill skill = new Skill(name, rewards, lvlUpMsg, representation, hourMultiplier);
 		for (AbstractReward reward : rewards) {
 			reward.setSkill(skill);
 		}
@@ -220,5 +229,9 @@ public class ConfigParser {
 			return cs.getInt(option);
 		}
 		return null;
+	}
+	
+	public DataBaseManager getDBManager() {
+		return dbm;
 	}
 }

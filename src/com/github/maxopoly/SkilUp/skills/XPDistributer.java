@@ -17,6 +17,7 @@ public class XPDistributer implements ListenerUser {
 	public void listenerTriggered(Event e, Player p) {
 		if (p != null) {
 			skill.getStatus(p).giveXP(xp);
+			System.out.println("Giving " + xp);
 		}
 	}
 }

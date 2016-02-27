@@ -21,10 +21,8 @@ public class BlockBreakListener extends AbstractListener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
 	public void catchEvent(BlockBreakEvent e) {
-		System.out.println("Event found by " + material + data);
 		if (material == null || material == e.getBlock().getType()) {
 			if (data == null || data == e.getBlock().getData()) {
-				System.out.println("Triggered by " + material + data);
 				tellUser(e, e.getPlayer());
 			}
 		}

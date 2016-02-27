@@ -19,11 +19,13 @@ public class DataBaseManager {
 	private SkilUpManager manager;
 	private DataBase db;
 
-	private Map<Skill, PreparedStatement> savePlayerDataStatements;
+	private Map<Skill, PreparedStatement> updatePlayerDataStatements;
 	private Map<Skill, PreparedStatement> loadPlayerDataStatements;
 
-	public DataBaseManager(String host, int port, String db, String user,
-			String password, Logger logger) {
+	public DataBaseManager(SkilUpManager manager, String host, int port,
+			String db, String user, String password, Logger logger) {
+		plugin = SkilUp.getPlugin();
+		this.manager = manager;
 		this.db = new DataBase(host, port, db, user, password, logger);
 		if (!this.db.connect()) {
 			logger.severe("Could not connect to database");
@@ -45,14 +47,14 @@ public class DataBaseManager {
 	}
 
 	public void loadPreparedStatements() {
-		savePlayerDataStatements = new HashMap<Skill, PreparedStatement>();
+		updatePlayerDataStatements = new HashMap<Skill, PreparedStatement>();
 		loadPlayerDataStatements = new HashMap<Skill, PreparedStatement>();
 		for (Skill skill : manager.getSkills()) {
-			PreparedStatement save = db.prepareStatement("insert into skilup"
-					+ skill.getName() + "(uuid, level, xp) values(?,?,?);");
-			savePlayerDataStatements.put(skill, save);
-			PreparedStatement load = db.prepareStatement("select * from skilup"
-					+ skill.getName() + " where id = ?;");
+			PreparedStatement save = db.prepareStatement("update skilup"
+					+ skill.getName()
+					+ " set level = ?, xp = ? where uuid = ?;");
+			updatePlayerDataStatements.put(skill, save);
+			PreparedStatement load = db.prepareStatement("select * from skilup" + skill.getName() +" where uuid = ?;");
 			loadPlayerDataStatements.put(skill, load);
 		}
 	}
@@ -66,20 +68,21 @@ public class DataBaseManager {
 		return db.isConnected();
 	}
 
-	public void savePlayerData(UUID uuid) {
+	public synchronized void savePlayerData(UUID uuid) {
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not save data for "
 					+ uuid.toString());
+			return;
 		}
-		for (Entry<Skill, PreparedStatement> entry : savePlayerDataStatements
+		for (Entry<Skill, PreparedStatement> entry : updatePlayerDataStatements
 				.entrySet()) {
 			Skill s = entry.getKey();
 			PreparedStatement ps = entry.getValue();
 			PlayerXPStatus pxps = s.getStatus(uuid);
 			try {
-				ps.setString(1, uuid.toString());
-				ps.setInt(2, pxps.getLevel());
-				ps.setInt(3, pxps.getCurrentXP());
+				ps.setInt(1, pxps.getLevel());
+				ps.setInt(2, pxps.getCurrentXP());
+				ps.setString(3, uuid.toString());
 				ps.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -92,26 +95,40 @@ public class DataBaseManager {
 		}
 	}
 
-	public boolean loadPlayerData(UUID uuid) {
+	public void createInitialPlayerData(Skill skill, UUID uuid) {
+		if (!isConnected()) {
+			plugin.severe("Could not connect to database, could not initialize data for "
+					+ uuid.toString());
+			return;
+		}
+		db.execute("insert into skilup" + skill.getName() + " (uuid,level,xp) VALUES ('"
+				+ uuid.toString() + "',0,0);");
+	}
+
+	public synchronized boolean loadPlayerData(UUID uuid) {
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not load data for "
 					+ uuid.toString());
 			return false;
 		}
-		for (Entry<Skill, PreparedStatement> entry : savePlayerDataStatements
+		for (Entry<Skill, PreparedStatement> entry : loadPlayerDataStatements
 				.entrySet()) {
 			Skill s = entry.getKey();
 			PreparedStatement ps = entry.getValue();
 			try {
 				ps.setString(1, uuid.toString());
 				ResultSet set = ps.executeQuery();
+				PlayerXPStatus pxps;
 				if (!set.next()) {
-					//no data on player, he is new
-					return false;
+					createInitialPlayerData(s, uuid);
+					pxps = new PlayerXPStatus(s, uuid, 0, 0);
+					plugin.info("Could not find data for skill " + s.getName()
+							+ " for " + uuid.toString() + ", creating new data");
+				} else {
+					int level = set.getInt("level");
+					int xp = set.getInt("xp");
+					pxps = new PlayerXPStatus(s, uuid, level, xp);
 				}
-				int level = set.getInt("level");
-				int xp = set.getInt("xp");
-				PlayerXPStatus pxps = new PlayerXPStatus(s, uuid, level, xp);
 				s.addXPStatus(pxps);
 			} catch (SQLException e) {
 				e.printStackTrace();

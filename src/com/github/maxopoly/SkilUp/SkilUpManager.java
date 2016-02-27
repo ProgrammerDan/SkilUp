@@ -13,10 +13,11 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 public class SkilUpManager {
 	private HashMap<String, Skill> skills;
 	private boolean useXPBar;
+	private SkilUp plugin;
 
 	public SkilUpManager(boolean useXPBar) {
 		skills = new HashMap<String, Skill>();
-		this.useXPBar = useXPBar;
+		plugin = SkilUp.getPlugin();
 	}
 
 	/**
@@ -35,15 +36,17 @@ public class SkilUpManager {
 	 *            The player whos data is saved
 	 */
 	public void savePlayerDataToDataBase(Player p) {
-		//TODO
-		for (Skill skill : skills.values()) { //for every skill
-			String skillname = skill.getName(); // save this
-			UUID uuid = p.getUniqueId(); // save this
-			PlayerXPStatus pxps = skill.getStatus(p);
-			int level = pxps.getLevel(); // save this
-			int currrentXP = pxps.getCurrentXP(); // save this
-		}
+		savePlayerDataToDataBase(p.getUniqueId());
+	}
 
+	/**
+	 * Saves the data of a specific player to the data base
+	 * 
+	 * @param playerName
+	 *            UUID of the player whos data is saved
+	 */
+	public void savePlayerDataToDataBase(UUID uuid) {
+		plugin.getDataBaseManager().savePlayerData(uuid);
 	}
 
 	/**
@@ -54,18 +57,18 @@ public class SkilUpManager {
 	 * @return true if the data was found and loaded, false if no data was found
 	 */
 	public boolean loadPlayerDataFromDataBase(Player p) {
-		return false;
-		// TODO
-		// for( ) //iterate over skills pulled from db
-		/*String skillName = null; // TODO
-		Skill skill = getSkillByName(skillName);
-		UUID playerUUID = null; // TODO
-		int level = 0; // TODO
-		int currentXP = 0; // TODO
-		PlayerXPStatus pxps = new PlayerXPStatus(skill, playerUUID, level,
-				currentXP);
-		skill.addXPStatus(pxps);
-		return true; // return false if data was not found */
+		return loadPlayerDataFromDataBase(p.getUniqueId());
+	}
+
+	/**
+	 * Loads the data of a specific player from the database into memory
+	 * 
+	 * @param uuid
+	 *            The players uuid whos data should be loaded
+	 * @return true if the data was found and loaded, false if no data was found
+	 */
+	public boolean loadPlayerDataFromDataBase(UUID uuid) {
+		return plugin.getDataBaseManager().loadPlayerData(uuid);
 	}
 
 	/**
@@ -76,12 +79,6 @@ public class SkilUpManager {
 	 *            The name of the player who joined for the first time
 	 */
 	public void playerFirstLogin(Player p) {
-		HashMap<String, Skill> temp = new HashMap<String, Skill>();
-		for (Map.Entry<String, Skill> skillEntry : skills.entrySet()) {
-			PlayerXPStatus pxps = new PlayerXPStatus(skillEntry.getValue(), p,
-					0, 0);
-			skillEntry.getValue().addXPStatus(pxps);
-		}
 	}
 
 	public Skill getSkillByName(String skillName) {
@@ -95,7 +92,7 @@ public class SkilUpManager {
 	public Collection<Skill> getSkills() {
 		return skills.values();
 	}
-	
+
 	public boolean useXPBar() {
 		return useXPBar;
 	}

@@ -6,19 +6,23 @@ import org.bukkit.command.CommandSender;
 import vg.civcraft.mc.civmodcore.ACivMod;
 
 import com.github.maxopoly.SkilUp.commands.CommandHandler;
+import com.github.maxopoly.SkilUp.database.DataBaseManager;
 import com.github.maxopoly.SkilUp.listeners.logging.LoginLogoutListener;
 
 public class SkilUp extends ACivMod {
 	private static SkilUp plugin;
 	private static SkilUpManager manager;
 	private CommandHandler commandHandler;
+	private static DataBaseManager dbm;
 
 	@Override
 	public void onEnable() {
 		super.onEnable();
 		commandHandler = new CommandHandler();
 		plugin = this;
-		manager = new ConfigParser(this).parseConfig();
+		ConfigParser cp = new ConfigParser(this);
+		manager = cp.parseConfig();
+		dbm = cp.getDBManager();
 		plugin.getServer().getPluginManager().registerEvents(new LoginLogoutListener(this), this);
 	}
 
@@ -43,6 +47,10 @@ public class SkilUp extends ACivMod {
 
 	public static SkilUp getPlugin() {
 		return plugin;
+	}
+	
+	public static DataBaseManager getDataBaseManager() {
+		return dbm;
 	}
 
 }
