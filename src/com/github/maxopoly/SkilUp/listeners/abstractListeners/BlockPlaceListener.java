@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 
 public class BlockPlaceListener extends AbstractListener {
 

@@ -9,7 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 
 public class FishingListener extends AbstractListener {
 

@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 public abstract class AbstractReward implements ListenerUser{

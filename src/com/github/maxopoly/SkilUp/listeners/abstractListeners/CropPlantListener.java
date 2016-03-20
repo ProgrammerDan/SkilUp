@@ -7,7 +7,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 
 public class CropPlantListener extends AbstractListener {
 	private Material material;

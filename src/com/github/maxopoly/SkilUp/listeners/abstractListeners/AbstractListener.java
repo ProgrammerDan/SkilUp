@@ -4,8 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
 import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 
 public abstract class AbstractListener implements Listener {
 

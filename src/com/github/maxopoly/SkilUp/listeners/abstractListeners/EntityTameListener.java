@@ -6,7 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityTameEvent;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 
 public class EntityTameListener extends AbstractListener {
 

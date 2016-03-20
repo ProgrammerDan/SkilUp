@@ -1,13 +1,13 @@
-package com.github.maxopoly.SkilUp.listeners.logging;
+package com.github.maxopoly.SkilUp.listeners.misc;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.messaging.PluginMessageRecipient;
 
 import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.SkilUpManager;
+import com.github.maxopoly.SkilUp.essences.EssenceTracker;
 
 public class LoginLogoutListener implements Listener {
 	private SkilUpManager em;
@@ -20,6 +20,13 @@ public class LoginLogoutListener implements Listener {
 	@EventHandler
 	public void playerLogin(PlayerLoginEvent e) {
 		em.loadPlayerDataFromDataBase(e.getPlayer());
+		EssenceTracker et = SkilUp.getEssenceTracker();
+		if (et != null) {
+			if (!e.getPlayer().hasPlayedBefore()) {
+				et.handleFirstLogin(e.getPlayer());
+			}
+			et.checkForGiveOut(e.getPlayer());
+		}
 	}
 
 	@EventHandler

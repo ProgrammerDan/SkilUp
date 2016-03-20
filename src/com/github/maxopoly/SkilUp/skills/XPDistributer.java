@@ -3,7 +3,7 @@ package com.github.maxopoly.SkilUp.skills;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
-import com.github.maxopoly.SkilUp.ListenerUser;
+import com.github.maxopoly.SkilUp.listeners.ListenerUser;
 
 public class XPDistributer implements ListenerUser {
 	private Skill skill;

@@ -1,4 +1,4 @@
-package com.github.maxopoly.SkilUp;
+package com.github.maxopoly.SkilUp.listeners;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;

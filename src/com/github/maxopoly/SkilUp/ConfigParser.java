@@ -3,6 +3,7 @@ package com.github.maxopoly.SkilUp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,8 +14,10 @@ import org.bukkit.potion.PotionEffect;
 import vg.civcraft.mc.civmodcore.itemHandling.ItemMap;
 import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parseItemMap;
 import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parsePotionEffects;
+import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parseTime;
 
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
+import com.github.maxopoly.SkilUp.essences.EssenceTracker;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.BlockBreakListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.BlockPlaceListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.ConsumptionListener;
@@ -34,6 +37,7 @@ public class ConfigParser {
 	private SkilUp plugin;
 	private String lvlUpMsg;
 	private DataBaseManager dbm;
+	private EssenceTracker et;
 
 	ConfigParser(SkilUp plugin) {
 		this.plugin = plugin;
@@ -52,13 +56,34 @@ public class ConfigParser {
 			Skill skill = parseSkill(skills.getConfigurationSection(key));
 			manager.addSkill(skill);
 		}
-		ConfigurationSection dbStuff = config.getConfigurationSection("database");
+
+		// db stuff
+		ConfigurationSection dbStuff = config
+				.getConfigurationSection("database");
 		String host = dbStuff.getString("host");
 		int port = dbStuff.getInt("port");
 		String db = dbStuff.getString("database_name");
 		String user = dbStuff.getString("user");
 		String password = dbStuff.getString("password");
-		dbm = new DataBaseManager(manager, host, port, db, user, password, plugin.getLogger());
+		dbm = new DataBaseManager(manager, host, port, db, user, password,
+				plugin.getLogger());
+
+		// essence stuff
+		ConfigurationSection essenceSection = config
+				.getConfigurationSection("essence");
+		if (essenceSection != null) {
+			long checkIntervall = parseTime(essenceSection.getString(
+					"check_intervall", "30m"));
+			long rewardIntervall = 50 * parseTime(essenceSection.getString(
+					"reward_intervall", "23h"));
+			String msg = essenceSection.getString("reward_msg", ChatColor.BLUE
+					+ "You got your daily reward");
+			ItemMap reward = parseItemMap(essenceSection
+					.getConfigurationSection("item"));
+			et = new EssenceTracker(checkIntervall, reward, rewardIntervall,
+					msg, dbm);
+		}
+
 		plugin.info("Finished parsing config and setup manager");
 		return manager;
 	}
@@ -73,7 +98,8 @@ public class ConfigParser {
 				config.getConfigurationSection("item_representation"))
 				.getItemStackRepresentation().get(0);
 		int hourMultiplier = config.getInt("hour_multiplier");
-		Skill skill = new Skill(name, rewards, lvlUpMsg, representation, hourMultiplier);
+		Skill skill = new Skill(name, rewards, lvlUpMsg, representation,
+				hourMultiplier);
 		for (AbstractReward reward : rewards) {
 			reward.setSkill(skill);
 		}
@@ -89,9 +115,11 @@ public class ConfigParser {
 			int xp = current.getInt("xp");
 			XPDistributer handler = new XPDistributer(skill, xp);
 			List<String> lore = current.getStringList("lore");
-			Material material = Material.getMaterial(current.getString("material"));
+			Material material = Material.getMaterial(current
+					.getString("material"));
 			Integer durability = integerNullCheck(current, "durability");
-			EntityType entity = EntityType.fromName(current.getString("entity"));
+			EntityType entity = EntityType
+					.fromName(current.getString("entity"));
 
 			switch (type) {
 			case "BLOCKPLACE":
@@ -155,18 +183,19 @@ public class ConfigParser {
 			case "PLANT":
 				CropPlantListener cpl = new CropPlantListener(handler, material);
 				plugin.info("Parsed crop plant listener, material:"
-						+ (material != null ? material.name() : "")
-					    + ",xp:" + String.valueOf(xp));
+						+ (material != null ? material.name() : "") + ",xp:"
+						+ String.valueOf(xp));
 				break;
 			case "RANGEDBLOCKBREAK":
 				int lowerBound = current.getInt("lowerDurabilityBound", 0);
 				int upperBound = current.getInt("upperDurabilityBound", 7);
-				RangedDuraBlockBreakListener cbl = new RangedDuraBlockBreakListener(handler, material, lowerBound, upperBound);
+				RangedDuraBlockBreakListener cbl = new RangedDuraBlockBreakListener(
+						handler, material, lowerBound, upperBound);
 				plugin.info("Parsed crop plant listener, material:"
 						+ (material != null ? material.name() : "")
 						+ ", lower durability bound: " + lowerBound
-						+ ", upper durability bound: " + upperBound
-					    + ",xp:" + String.valueOf(xp));
+						+ ", upper durability bound: " + upperBound + ",xp:"
+						+ String.valueOf(xp));
 				break;
 			default:
 				plugin.severe(type
@@ -230,8 +259,12 @@ public class ConfigParser {
 		}
 		return null;
 	}
-	
+
 	public DataBaseManager getDBManager() {
 		return dbm;
+	}
+
+	public EssenceTracker getEssenceTracker() {
+		return et;
 	}
 }
