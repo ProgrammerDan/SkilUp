@@ -1,6 +1,7 @@
 package com.github.maxopoly.SkilUp;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
@@ -28,16 +29,23 @@ import com.github.maxopoly.SkilUp.listeners.abstractListeners.EntityTameListener
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.FishingListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.ItemBreakListener;
 import com.github.maxopoly.SkilUp.listeners.abstractListeners.ShearListener;
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.rewards.AbstractReward;
+import com.github.maxopoly.SkilUp.rewards.BuffReward;
 import com.github.maxopoly.SkilUp.rewards.DropReward;
 import com.github.maxopoly.SkilUp.skills.Skill;
 import com.github.maxopoly.SkilUp.skills.XPDistributer;
+import com.github.maxopoly.SkilUp.tracking.AmountTrackable;
+import com.github.maxopoly.SkilUp.tracking.LocationTrackable;
+import com.github.maxopoly.SkilUp.tracking.Trackable;
+import com.github.maxopoly.SkilUp.tracking.Tracker;
 
 public class ConfigParser {
 	private SkilUp plugin;
 	private String lvlUpMsg;
 	private DataBaseManager dbm;
 	private EssenceTracker et;
+	private Tracker tracker;
 
 	ConfigParser(SkilUp plugin) {
 		this.plugin = plugin;
@@ -57,6 +65,9 @@ public class ConfigParser {
 			manager.addSkill(skill);
 		}
 
+		// blocktracking
+		parseTracking(config.getConfigurationSection("tracking"));
+
 		// db stuff
 		ConfigurationSection dbStuff = config
 				.getConfigurationSection("database");
@@ -65,7 +76,7 @@ public class ConfigParser {
 		String db = dbStuff.getString("database_name");
 		String user = dbStuff.getString("user");
 		String password = dbStuff.getString("password");
-		dbm = new DataBaseManager(manager, host, port, db, user, password,
+		dbm = new DataBaseManager(manager, tracker, host, port, db, user, password,
 				plugin.getLogger());
 
 		// essence stuff
@@ -105,6 +116,48 @@ public class ConfigParser {
 		}
 		parseXPListeners(skill, config.getConfigurationSection("xp_gains"));
 		return skill;
+	}
+
+	public void parseTracking(ConfigurationSection config) {
+		tracker = new Tracker();
+		for(String key : config.getKeys(false)) {
+			ConfigurationSection current = config.getConfigurationSection(key);
+			if (current == null) {
+				plugin.severe("Found the key " + key + " in tracking section where only config section identifers are allowed, could not parse this tracker");
+				continue;
+			}
+			String type = current.getString("type");
+			if (type == null) {
+				plugin.severe("No type was specified for tracker at " + current.getCurrentPath()+ ", could not parse tracker");
+				continue;
+			}
+			String matString = current.getString("material");
+			if (matString == null) {
+				plugin.severe("No material was specified for tracker at " + current.getCurrentPath()+ ", could not parse tracker");
+				continue;
+			}
+			Material mat = Material.matchMaterial(matString);
+			if (mat == null) {
+				plugin.severe("Could not recognize material " + matString + " at " + current.getCurrentPath()+ ", could not parse tracker");
+			}
+			Trackable t = null;
+			switch(type) {
+			case "AMOUNT":
+				t = new AmountTrackable(mat, (short) 0, false);
+				plugin.info("Parsed AmountTracker for material:" + mat.toString());
+				break;
+			case "LOCATION":
+				t = new LocationTrackable(mat, new LinkedList <Short>(), false);
+				plugin.info("Parsed LocationTracker for material:" + mat.toString());
+				break;
+			default:
+				plugin.severe("Could not identify the tracker type " + type + " at " + current.getCurrentPath());
+				continue;
+			}
+			if (t != null) {
+				tracker.registerTrackable(t);
+			}
+		}
 	}
 
 	public void parseXPListeners(Skill skill, ConfigurationSection cs) {
@@ -206,34 +259,40 @@ public class ConfigParser {
 
 	public ArrayList<AbstractReward> parseRewards(ConfigurationSection config) {
 		ArrayList<AbstractReward> rewards = new ArrayList<AbstractReward>();
-		int index = 0;
 		for (String key : config.getKeys(false)) {
 			AbstractReward ar = null;
 			ConfigurationSection current = config.getConfigurationSection(key);
-			int reqLvl = current.getInt("required_level");
-			double chance = current.getDouble("chance");
+			int reqLvl = current.getInt("required_level", 0);
+			int maxLvL = current.getInt("maximum_level", 1000);
+			double startingChance = current.getDouble("starting_chance", 1.0);
+			double endChance = current.getDouble("end_chance", startingChance);
 			String type = current.getString("type");
 			String info = current.getString("info");
 			String name = current.getString("name");
 			ItemStack representation = parseItemMap(
 					current.getConfigurationSection("item_representation"))
 					.getItemStackRepresentation().get(0);
+			RandomModule rng = new RandomModule(reqLvl, maxLvL, startingChance,
+					endChance);
 			switch (type) {
 			case "DROP":
 				ItemMap is = parseItemMap(current
 						.getConfigurationSection("item"));
-				ar = new DropReward(null, reqLvl, index, chance, info,
-						representation, name, is);
+				ar = new DropReward(null, reqLvl, maxLvL, info, representation,
+						name, rng, is);
 				break;
 			case "BUFF":
 				List<PotionEffect> pe = parsePotionEffects(current
-						.getConfigurationSection("potion_effect"));
+						.getConfigurationSection("potion_effects"));
+				ar = new BuffReward(null, reqLvl, maxLvL, info, representation,
+						name, pe, rng);
 				break;
-
+			default:
+				plugin.severe("Could not recognize reward type " + type);
+				continue;
 			}
 			rewards.add(ar);
 			parseCause(current.getConfigurationSection("cause"), ar);
-			index++;
 		}
 		return rewards;
 	}
@@ -245,11 +304,16 @@ public class ConfigParser {
 			List<String> lore = cs.getStringList("lore");
 			Material mat = Material.getMaterial(cs.getString("material"));
 			Integer durability = integerNullCheck(cs, "durability");
+			BlockPlaceListener bpl = new BlockPlaceListener(ar, mat,
+					durability, lore);
 			break;
 		case "BLOCKBREAK":
 			Material mate = Material.getMaterial(cs.getString("material"));
 			Integer blockType = integerNullCheck(cs, "durability");
+			BlockBreakListener bbl = new BlockBreakListener(ar, mate, blockType);
 			break;
+		default:
+			plugin.severe("Could not recognize reward cause " + type);
 		}
 	}
 

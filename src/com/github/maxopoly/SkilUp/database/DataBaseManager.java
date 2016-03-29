@@ -37,10 +37,11 @@ public class DataBaseManager {
 	private PreparedStatement updateEssenceData;
 	private PreparedStatement getEssenceData;
 
-	public DataBaseManager(SkilUpManager manager, String host, int port,
+	public DataBaseManager(SkilUpManager manager, Tracker tracker, String host, int port,
 			String db, String user, String password, Logger logger) {
 		plugin = SkilUp.getPlugin();
 		this.manager = manager;
+		this.tracker = tracker;
 		this.db = new DataBase(host, port, db, user, password, logger);
 		if (!this.db.connect()) {
 			logger.severe("Could not connect to database");
@@ -67,16 +68,17 @@ public class DataBaseManager {
 				+ " y smallint not null, amount smallint not null, "
 				+ " primary key(world, chunkid, y, material));");
 		db.execute("create table if not exists locationTracking"
-				+ " (chunkid bigint not null,world varchar(255),position int not null,material varchar(255) primary key(chunkid, position));");
+				+ " (chunkid bigint not null,world varchar(255),position int not null,material varchar(255), primary key(chunkid, position));");
 
 		// init table for essence tracking
-		db.execute("create table if not exists essenceTracking (uuid varchar(255) not null, timestamp bigint not null primary key(uuid));");
+		db.execute("create table if not exists essenceTracking (uuid varchar(255) not null, timestamp bigint not null, primary key(uuid));");
 	}
 
 	public void loadPreparedStatements() {
 		updatePlayerDataStatements = new HashMap<Skill, PreparedStatement>();
 		loadPlayerDataStatements = new HashMap<Skill, PreparedStatement>();
 		removeBlockDataStatements = new HashMap<Trackable, PreparedStatement>();
+		insertBlockDataStatements = new HashMap<Trackable, PreparedStatement>();
 		for (Skill skill : manager.getSkills()) {
 			PreparedStatement save = db.prepareStatement("update skilup"
 					+ skill.getName()
@@ -203,7 +205,7 @@ public class DataBaseManager {
 		return true;
 	}
 
-	public void saveChunkData(String world, long id, Trackable[] data, byte y) {
+	public void saveChunkData(String world, long id, Trackable[] data, short y) {
 		for (Trackable t : data) {
 			if (t.isDirty()) {
 				if (t instanceof AmountTrackable) {
@@ -213,8 +215,8 @@ public class DataBaseManager {
 						synchronized (ins) {
 							try {
 								ins.setLong(1, id);
-								ins.setByte(2, y);
-								ins.setByte(3,
+								ins.setShort(2, y);
+								ins.setShort(3,
 										((AmountTrackable) t).getAmount());
 								ins.setString(4, world);
 							} catch (SQLException e) {
@@ -231,10 +233,10 @@ public class DataBaseManager {
 								.get(t);
 						synchronized (update) {
 							try {
-								update.setByte(1,
+								update.setShort(1,
 										((AmountTrackable) t).getAmount());
 								update.setLong(2, id);
-								update.setByte(3, y);
+								update.setShort(3, y);
 								update.setString(4, world);
 							} catch (SQLException e) {
 								e.printStackTrace();
@@ -253,7 +255,7 @@ public class DataBaseManager {
 								.get(t);
 						synchronized (ins) {
 							int shiftedY = y << 16;
-							for (Byte s : ((LocationTrackable) t)
+							for (Short s : ((LocationTrackable) t)
 									.getPositions()) {
 								try {
 									ins.setLong(1, id);
@@ -275,7 +277,7 @@ public class DataBaseManager {
 								.get(t);
 						synchronized (del) {
 							int shiftedY = y << 16;
-							for (Byte s : ((LocationTrackable) t)
+							for (Short s : ((LocationTrackable) t)
 									.getRemovedPositions()) {
 								try {
 									del.setLong(1, id);
@@ -317,8 +319,8 @@ public class DataBaseManager {
 		try {
 			while (set.next()) {
 				Material mat = Material.getMaterial(set.getString("material"));
-				byte y = set.getByte("y");
-				byte amount = set.getByte("amount");
+				short y = set.getShort("y");
+				short amount = set.getShort("amount");
 				short s = tracker.getDataIndex(mat);
 				trackables[y][s] = new AmountTrackable(mat, amount, true);
 			}
@@ -349,12 +351,12 @@ public class DataBaseManager {
 				Material material = Material.getMaterial(set
 						.getString("material"));
 				int pos = set.getInt("position");
-				byte relPos = (byte) pos;
-				byte y = (byte) (pos >> 16);
+				short relPos = (short) pos;
+				short y = (short) (pos >> 16);
 				short s = tracker.getDataIndex(material);
 				if (trackables[y][s] == null) {
 					trackables[y][s] = new LocationTrackable(material,
-							new LinkedList<Byte>(), true);
+							new LinkedList<Short>(), true);
 					if (relPos != -1) {
 						((LocationTrackable) trackables[y][s]).add(relPos);
 					}

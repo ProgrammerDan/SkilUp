@@ -12,43 +12,43 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import com.github.maxopoly.SkilUp.events.TrackedBlockBreak;
 
 public class LocationTrackable extends Trackable {
-	private List <Byte> positions;
-	private List <Byte> removedPositions;
+	private List <Short> positions;
+	private List <Short> removedPositions;
 	
-	public LocationTrackable(Material m, List <Byte> positions, boolean savedBefore) {
+	public LocationTrackable(Material m, List <Short> positions, boolean savedBefore) {
 		super(m, savedBefore);
 		if (!savedBefore) {
 			//if it hasnt been saved before, we will save the position -1 to mark that this layer is tracked
-			positions.add((byte) -1);
+			positions.add((short) -1);
 		}
 		this.positions = positions;
-		removedPositions = new LinkedList <Byte> ();
+		removedPositions = new LinkedList <Short> ();
 	}
 	
-	public boolean isTracked(byte s) {
+	public boolean isTracked(short s) {
 		return positions.contains(s);
 	}
 	
-	public void add(byte s) {
+	public void add(short s) {
 		positions.add(s);
 	}
 	
-	public void remove(byte s) {
+	public void remove(short s) {
 		positions.remove(s);
 		removedPositions.add(s);
 		setDirty(true);
 	}
 	
-	public List<Byte> getPositions() {
+	public List<Short> getPositions() {
 		return positions;
 	}
 	
-	public List <Byte> getRemovedPositions() {
+	public List <Short> getRemovedPositions() {
 		return removedPositions;
 	}
 	
 	public void handleBreak(BlockBreakEvent e) {
-		byte b = translateLocation(e.getBlock().getLocation());
+		short b = translateLocation(e.getBlock().getLocation());
 		if (positions.contains(b)) {
 			positions.remove(b);
 			removedPositions.add(b);
@@ -61,9 +61,17 @@ public class LocationTrackable extends Trackable {
 		
 	}
 	
-	public byte translateLocation(Location loc) {
+	public short translateLocation(Location loc) {
 		int x = loc.getBlockX() % 16;
 		int z = loc.getBlockX() % 16;
-		return (byte) ((z * 16) + x);
+		return (short) ((z * 16) + x);
+	}
+	
+	public Trackable clone() {
+		return new LocationTrackable(getMaterial(), new LinkedList <Short> (), false);
+	}
+	
+	public void addLocation(Location loc) {
+		add(translateLocation(loc));
 	}
 }

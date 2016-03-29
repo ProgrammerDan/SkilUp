@@ -5,6 +5,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 /**
@@ -17,10 +18,11 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 public class DamageModifierReward extends AbstractReward {
 	private double multiplier;
 
-	public DamageModifierReward(Skill skill, int requiredLevel, double chance,
-			String info, ItemStack itemRepresentation, String name,
-			double multiplier) {
-		super(skill, requiredLevel, chance, info, itemRepresentation, name);
+	public DamageModifierReward(Skill skill, int requiredLevel,
+			int maximumLevel, String info, ItemStack itemRepresentation,
+			String name, RandomModule rng, double multiplier) {
+		super(skill, requiredLevel, maximumLevel, info, itemRepresentation,
+				name, rng);
 		this.multiplier = multiplier;
 	}
 
@@ -30,11 +32,11 @@ public class DamageModifierReward extends AbstractReward {
 	public double getDamageMultiplier() {
 		return multiplier;
 	}
-	
+
 	public void listenerTriggered(Event e, Player p) {
 		EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
 		edbee.setDamage(edbee.getDamage() * multiplier);
-		//changes only raw damage, not the actual damage
+		// changes only raw damage, not the actual damage
 	}
 
 }

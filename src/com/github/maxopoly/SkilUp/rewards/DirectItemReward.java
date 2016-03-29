@@ -7,15 +7,17 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 public class DirectItemReward extends AbstractReward {
 	private ItemStack is;
 
-	public DirectItemReward(Skill skill, int requiredLevel,	double chance, String info, ItemStack itemRepresentation,
-			String name, ItemStack drop) {
-		super(skill, requiredLevel, chance, info,
-				itemRepresentation, name);
+	public DirectItemReward(Skill skill, int requiredLevel, int maximumLevel,
+			String info, ItemStack itemRepresentation,
+			String name, RandomModule rng, ItemStack drop) {
+		super(skill, requiredLevel, maximumLevel, info,
+				itemRepresentation, name, rng);
 		this.is = drop;
 	}
 
@@ -25,7 +27,7 @@ public class DirectItemReward extends AbstractReward {
 	 */
 	public void applyEffect(Object... data) {
 		Player p = (Player) data[0];
-		if (rollForApplying()) {
+		if (shouldBeGivenOut(p)) {
 			SkilUp.getPlugin().debug(
 					name + " gave " + p.getUniqueId() + " " + is.toString());
 			HashMap<Integer, ItemStack> notGiven = p.getInventory().addItem(

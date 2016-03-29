@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
 import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 /**
@@ -20,10 +20,11 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 public class BuffReward extends AbstractReward {
 	private List<PotionEffect> pe;
 
-	public BuffReward(Skill skill, int requiredLevel,
-			double chance, String info, ItemStack itemRepresentation,
-			String name, List<PotionEffect> pe) {
-		super(skill, requiredLevel, chance, info, itemRepresentation, name);
+	public BuffReward(Skill skill, int requiredLevel, int maximumLevel,
+			String info, ItemStack itemRepresentation, String name,
+			List<PotionEffect> pe, RandomModule rng) {
+		super(skill, requiredLevel, maximumLevel, info, itemRepresentation,
+				name, rng);
 		this.pe = pe;
 	}
 
@@ -42,7 +43,7 @@ public class BuffReward extends AbstractReward {
 								+ p.getUniqueId());
 
 				p.addPotionEffect(pot);
-				// p.addPotionEffect(pe,true);
+				// p.addPotionEffect(pot,true);
 				// second version would overwrite any current effect
 			}
 		}

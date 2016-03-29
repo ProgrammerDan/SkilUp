@@ -1,50 +1,61 @@
 package com.github.maxopoly.SkilUp.rewards;
 
-import java.util.Random;
-
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.maxopoly.SkilUp.listeners.ListenerUser;
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
-public abstract class AbstractReward implements ListenerUser{
+public abstract class AbstractReward implements ListenerUser {
 	protected int requiredLevel;
+	protected int maximumLevel;
 	protected Skill skill;
-	protected double chance;
-	protected static Random rng = new Random();
+	protected RandomModule rng;
 	protected String info;
 	protected String name;
 	protected ItemStack itemRepresentation;
 
-	public AbstractReward(Skill skill, int requiredLevel,
-			double chance, String info,
-			ItemStack itemRepresentation, String name) {
+	public AbstractReward(Skill skill, int requiredLevel, int maximumLevel,
+			String info, ItemStack itemRepresentation,
+			String name, RandomModule rng) {
 		this.skill = skill;
+		this.maximumLevel = maximumLevel;
 		this.requiredLevel = requiredLevel;
-		this.chance = chance;
 		this.itemRepresentation = itemRepresentation;
 		this.info = info;
 		this.name = name;
+		this.rng = rng;
 	}
 
 	/**
-	 * Takes the chance set for this reward into account and randomly decides
-	 * whether a reward should be given out
+	 * Checks whether a player fulfills the level requirements for this skill
 	 * 
-	 * @return True if a reward should be given out, false if not
+	 * @param p
+	 *            Player to check for
+	 * @return True if the player fulfills the level requirements, false if not
 	 */
-	protected boolean rollForApplying() {
-		return rng.nextDouble() <= chance;
+	protected boolean deservesReward(Player p) {
+		if (p != null) {
+			int level = skill.getStatus(p).getLevel();
+			return level >= requiredLevel && level <= maximumLevel;
+		}
+		return false;
 	}
 
-	protected boolean deservesReward(Player p) {
-		return p != null && skill.getStatus(p).getLevel() >= requiredLevel;
-	}
-	
+	/**
+	 * Convenience method that takes both level requirements and random chances
+	 * into account to determine whether a player should get a reward
+	 * 
+	 * @param p
+	 *            Player to check for
+	 * @return true if the player should get the reward, false if not
+	 */
 	protected boolean shouldBeGivenOut(Player p) {
-		return deservesReward(p) && rollForApplying();
+		if (p != null) {
+			return rng.roll(skill.getStatus(p).getLevel());
+		}
+		return false;
 	}
 
 	/**
@@ -52,6 +63,13 @@ public abstract class AbstractReward implements ListenerUser{
 	 */
 	public int getRequiredLevel() {
 		return requiredLevel;
+	}
+
+	/**
+	 * @return The maximum level to be eligible for this reward
+	 */
+	public int getMaximumLevel() {
+		return maximumLevel;
 	}
 
 	/**

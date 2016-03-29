@@ -1,11 +1,10 @@
 package com.github.maxopoly.SkilUp.rewards;
 
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 /**
@@ -17,9 +16,10 @@ import com.github.maxopoly.SkilUp.skills.Skill;
 public class DamageReward extends AbstractReward {
 	private int damage;
 
-	public DamageReward(Skill skill, int requiredLevel, double chance,
-			String info, ItemStack itemRepresentation, String name, int damage) {
-		super(skill, requiredLevel, chance, info, itemRepresentation, name);
+	public DamageReward(Skill skill, int requiredLevel, int maximumLevel,
+			String info, ItemStack itemRepresentation,
+			String name, RandomModule rng, int damage) {
+		super(skill, requiredLevel, maximumLevel, info, itemRepresentation, name, rng);
 		this.damage = damage;
 	}
 

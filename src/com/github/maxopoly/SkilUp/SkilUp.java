@@ -8,7 +8,9 @@ import vg.civcraft.mc.civmodcore.ACivMod;
 import com.github.maxopoly.SkilUp.commands.CommandHandler;
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
 import com.github.maxopoly.SkilUp.essences.EssenceTracker;
+import com.github.maxopoly.SkilUp.listeners.misc.ChunkLoadListener;
 import com.github.maxopoly.SkilUp.listeners.misc.LoginLogoutListener;
+import com.github.maxopoly.SkilUp.tracking.Tracker;
 
 public class SkilUp extends ACivMod {
 	private static SkilUp plugin;
@@ -16,6 +18,7 @@ public class SkilUp extends ACivMod {
 	private CommandHandler commandHandler;
 	private static DataBaseManager dbm;
 	private static EssenceTracker essenceTracker;
+	private static Tracker tracker;
 
 	@Override
 	public void onEnable() {
@@ -26,7 +29,9 @@ public class SkilUp extends ACivMod {
 		manager = cp.parseConfig();
 		dbm = cp.getDBManager();
 		essenceTracker = cp.getEssenceTracker();
+		tracker = new Tracker();
 		plugin.getServer().getPluginManager().registerEvents(new LoginLogoutListener(this), this);
+		plugin.getServer().getPluginManager().registerEvents(new ChunkLoadListener(), this);
 	}
 
 	@Override
@@ -58,6 +63,10 @@ public class SkilUp extends ACivMod {
 	
 	public static EssenceTracker getEssenceTracker() {
 		return essenceTracker;
+	}
+	
+	public static Tracker getTracker() {
+		return tracker;
 	}
 
 }

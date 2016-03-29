@@ -1,6 +1,7 @@
 package com.github.maxopoly.SkilUp.tracking;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -9,18 +10,18 @@ import com.github.maxopoly.SkilUp.events.TrackedBlockBreak;
 
 public class AmountTrackable extends Trackable {
 	
-	private byte amount;
+	private short amount;
 	
-	public AmountTrackable(Material mat, byte amount, boolean savedBefore) {
+	public AmountTrackable(Material mat, short amount, boolean savedBefore) {
 		super(mat, savedBefore);
 		this.amount = amount;
 	}
 	
-	public byte getAmount() {
+	public short getAmount() {
 		return amount;
 	}
 	
-	public void setAmount(byte amount) {
+	public void setAmount(short amount) {
 		this.amount = amount;
 		setDirty(true);
 	}
@@ -35,5 +36,13 @@ public class AmountTrackable extends Trackable {
 	
 	public void handlePlace(BlockPlaceEvent e) {
 		
+	}
+	
+	public Trackable clone() {
+		return new AmountTrackable(getMaterial(), (short) 0, false);
+	}
+	
+	public void addLocation(Location loc) {
+		setAmount((short) (amount+1));
 	}
 }

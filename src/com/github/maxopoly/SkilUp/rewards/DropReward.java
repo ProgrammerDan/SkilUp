@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import vg.civcraft.mc.civmodcore.itemHandling.ItemMap;
 
 import com.github.maxopoly.SkilUp.SkilUp;
+import com.github.maxopoly.SkilUp.misc.RandomModule;
 import com.github.maxopoly.SkilUp.skills.Skill;
 
 /**
@@ -20,10 +21,11 @@ public class DropReward extends AbstractReward {
 
 	private ItemMap im;
 
-	public DropReward(Skill skill, int requiredLevel, int index, double chance,
-			String info, ItemStack itemRepresentation, String name, ItemMap drop) {
-		super(skill, requiredLevel, chance, info,
-				itemRepresentation, name);
+	public DropReward(Skill skill, int requiredLevel, int maximumLevel,
+			String info, ItemStack itemRepresentation,
+			String name, RandomModule rng, ItemMap drop) {
+		super(skill, requiredLevel, maximumLevel, info,
+				itemRepresentation, name, rng);
 		this.im = drop;
 	}
 
@@ -33,7 +35,8 @@ public class DropReward extends AbstractReward {
 	 */
 	public void applyEffect(Object... data) {
 		Location loc = (Location) data[0];
-		if (rollForApplying()) {
+		Player p = null;
+		if (shouldBeGivenOut(p)) {
 			for (ItemStack is : im.getItemStackRepresentation()) {
 				SkilUp.getPlugin().debug(
 						"Dropped " + is.toString() + " at " + loc.toString());

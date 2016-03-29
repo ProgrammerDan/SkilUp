@@ -10,6 +10,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
 
 public class Tracker {
@@ -22,22 +23,26 @@ public class Tracker {
 	private Trackable[] exampleTrackables;
 	
 	public Tracker() {
+		amounts = new TreeMap<String, Map<Long,Trackable[][]>>();
+		materialIndex = new TreeMap<Material, Short>();
+		exampleTrackables = new Trackable [0];
 		for(World w : Bukkit.getWorlds()) {
 			amounts.put(w.getName(), new TreeMap<Long, Trackable[][]>());
 		}
+		db = SkilUp.getDataBaseManager();
 	}
 
 	public void handleBreak(BlockBreakEvent e) {
 		Block b = e.getBlock();
 		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(), generateChunkID(b.getChunk()),
-				(byte) b.getLocation().getBlockY());
+				(short) b.getLocation().getBlockY());
 		sliceData[materialIndex.get(b.getType())].handleBreak(e);
 	}
 
 	public void handlePlace(BlockBreakEvent e) {
 		Block b = e.getBlock();
 		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(), generateChunkID(b.getChunk()),
-				(byte) b.getLocation().getBlockY());
+				(short) b.getLocation().getBlockY());
 		sliceData[materialIndex.get(b.getType())].handleBreak(e);
 	}
 
@@ -52,7 +57,7 @@ public class Tracker {
 		return materialIndex.get(m);
 	}
 
-	public Trackable[] getDataSlice(String world, long chunkID, byte y) {
+	public Trackable[] getDataSlice(String world, long chunkID, short y) {
 		Map <Long, Trackable[][]> worldMap = amounts.get(world);
 		Trackable[][] track = worldMap.get(chunkID);
 		if (track == null) {
@@ -62,18 +67,29 @@ public class Tracker {
 		Trackable[] t = track[y];
 		if (t[0] == null) {
 			// not initialized
-			initLayer(world, chunkID, y);
+			initLayer(world, chunkID, y, t);
 		}
 		return t;
 	}
 	
-	public void initLayer(String world, long chunkID, byte y) {
+	public void initLayer(String world, long chunkID, short y, Trackable [] trackables) {
+		World w = Bukkit.getWorld(world);
+		for(int i = 0; i < exampleTrackables.length ; i++) {
+			trackables[i] = exampleTrackables[i].clone();
+		}
+		Chunk c = w.getChunkAt((int)(chunkID >> 32), (int) chunkID);
 		for(int x = 0; x < 16; x++) {
-			
+			for(int z = 0; z < 16; z++) {
+				Block b = c.getBlock(x, y, z);
+				Short slot = getDataIndex(b.getType());
+				if (slot != null) {
+					trackables[slot].addLocation(b.getLocation());
+				}
+			}
 		}
 	}
 
-	private Trackable[] getDataSliceForSaving(String world, long chunkID, byte y) {
+	private Trackable[] getDataSliceForSaving(String world, long chunkID, short y) {
 		Map <Long, Trackable[][]> worldMap = amounts.get(world);
 		Trackable[][] track = worldMap.get(chunkID);
 		if (track == null) {
@@ -95,8 +111,8 @@ public class Tracker {
 
 	public void saveData(Chunk c) {
 		long id = generateChunkID(c);
-		for (byte y = 0; y <= 255; y++) {
-			Trackable[] slice = getDataSliceForSaving(c.getWorld().getName(), id, (byte) y);
+		for (short y = 0; y <= 255; y++) {
+			Trackable[] slice = getDataSliceForSaving(c.getWorld().getName(), id, (short) y);
 			if (slice != null) {
 				db.saveChunkData(c.getWorld().getName(), id, slice, y);
 			}
@@ -105,5 +121,16 @@ public class Tracker {
 
 	public Trackable[] getTrackables() {
 		return exampleTrackables;
+	}
+	
+	public void registerTrackable(Trackable t) {
+		Trackable [] exampleReplacement = new Trackable [exampleTrackables.length + 1];
+		//copy old ones over
+		for(int i = 0; i < exampleTrackables.length; i++) {
+			exampleReplacement [i] = exampleTrackables [i];
+		}
+		exampleReplacement[exampleTrackables.length] = t;
+		materialIndex.put(t.getMaterial(), (short) exampleTrackables.length);
+		exampleTrackables = exampleReplacement;
 	}
 }
