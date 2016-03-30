@@ -6,11 +6,12 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 public abstract class Trackable {
-	private Material material;
-	private boolean dirty;
-	private boolean savedBefore;
+	protected Material material;
+	protected boolean dirty;
+	protected boolean savedBefore;
+	protected TrackableConfig config;
 
-	public Trackable(Material m, boolean savedBefore) {
+	public Trackable(Material m, boolean savedBefore, TrackableConfig config) {
 		this.material = m;
 		if (savedBefore) {
 			dirty = false;
@@ -18,6 +19,7 @@ public abstract class Trackable {
 			dirty = true;
 		}
 		this.savedBefore = savedBefore;
+		this.config = config;
 	}
 
 	public abstract void handleBreak(BlockBreakEvent e);
@@ -42,6 +44,10 @@ public abstract class Trackable {
 
 	public void setDirty(boolean dirty) {
 		this.dirty = dirty;
+	}
+	
+	public TrackableConfig getConfig() {
+		return config;
 	}
 
 	public abstract Trackable clone();

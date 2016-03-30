@@ -24,7 +24,7 @@ public class ChunkLoadListener implements Listener {
 		Bukkit.getScheduler().runTaskAsynchronously(SkilUp.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
-				tracker.loadData(c);				
+				tracker.handleLoad(c);				
 			}
 		});
 	}
@@ -35,7 +35,7 @@ public class ChunkLoadListener implements Listener {
 		Bukkit.getScheduler().runTaskAsynchronously(SkilUp.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
-				tracker.saveData(c);				
+				tracker.handleUnload(c);				
 			}
 		});
 	}

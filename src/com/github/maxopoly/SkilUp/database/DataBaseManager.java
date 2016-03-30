@@ -149,11 +149,6 @@ public class DataBaseManager {
 				ps.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					ps.close();
-				} catch (Exception ex) {
-				}
 			}
 		}
 	}
@@ -195,17 +190,17 @@ public class DataBaseManager {
 				s.addXPStatus(pxps);
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					ps.close();
-				} catch (Exception ex) {
-				}
 			}
 		}
 		return true;
 	}
 
 	public void saveChunkData(String world, long id, Trackable[] data, short y) {
+		if (!isConnected()) {
+			plugin.severe("Could not connect to database, could not save data for chunk"
+					+ id + " in " + world);
+			return;
+		}
 		for (Trackable t : data) {
 			if (t.isDirty()) {
 				if (t instanceof AmountTrackable) {
@@ -221,11 +216,6 @@ public class DataBaseManager {
 								ins.setString(4, world);
 							} catch (SQLException e) {
 								e.printStackTrace();
-							} finally {
-								try {
-									ins.close();
-								} catch (Exception ex) {
-								}
 							}
 						}
 					} else {
@@ -240,11 +230,6 @@ public class DataBaseManager {
 								update.setString(4, world);
 							} catch (SQLException e) {
 								e.printStackTrace();
-							} finally {
-								try {
-									update.close();
-								} catch (Exception ex) {
-								}
 							}
 						}
 					}
@@ -264,11 +249,6 @@ public class DataBaseManager {
 									ins.setString(4, world);
 								} catch (SQLException e) {
 									e.printStackTrace();
-								} finally {
-									try {
-										ins.close();
-									} catch (Exception ex) {
-									}
 								}
 							}
 						}
@@ -285,11 +265,6 @@ public class DataBaseManager {
 									del.setString(3, world);
 								} catch (SQLException e) {
 									e.printStackTrace();
-								} finally {
-									try {
-										del.close();
-									} catch (Exception ex) {
-									}
 								}
 							}
 						}
@@ -300,6 +275,11 @@ public class DataBaseManager {
 	}
 
 	public Trackable[][] loadChunkData(String world, long id) {
+		if (!isConnected()) {
+			plugin.severe("Could not connect to database, could not load data for chunk"
+					+ id + " in " + world);
+			return null;
+		}
 		Trackable[][] trackables = new Trackable[256][tracker.getTrackables().length];
 		ResultSet amountSet = null;
 		synchronized (getChunkAmountData) {
@@ -307,22 +287,16 @@ public class DataBaseManager {
 				getChunkAmountData.setLong(1, id);
 				getChunkAmountData.setString(2, world);
 				amountSet = getChunkAmountData.executeQuery();
-					while (amountSet.next()) {
-						Material mat = Material.getMaterial(amountSet
-								.getString("material"));
-						short y = amountSet.getShort("y");
-						short amount = amountSet.getShort("amount");
-						short s = tracker.getDataIndex(mat);
-						trackables[y][s] = new AmountTrackable(mat, amount,
-								true);
-					}
+				while (amountSet.next()) {
+					Material mat = Material.getMaterial(amountSet
+							.getString("material"));
+					short y = amountSet.getShort("y");
+					short amount = amountSet.getShort("amount");
+					short s = tracker.getDataIndex(mat);
+					trackables[y][s] = new AmountTrackable(mat, amount, true, tracker.getTrackables()[s].getConfig());
+				}
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					getChunkAmountData.close();
-				} catch (Exception ex) {
-				}
 			}
 		}
 		ResultSet locationSet = null;
@@ -331,96 +305,81 @@ public class DataBaseManager {
 				getChunkLocationData.setLong(1, id);
 				getChunkLocationData.setString(2, world);
 				locationSet = getChunkLocationData.executeQuery();
-				
-					while (locationSet.next()) {
-						Material material = Material.getMaterial(locationSet
-								.getString("material"));
-						int pos = locationSet.getInt("position");
-						short relPos = (short) pos;
-						short y = (short) (pos >> 16);
-						short s = tracker.getDataIndex(material);
-						if (trackables[y][s] == null) {
-							trackables[y][s] = new LocationTrackable(material,
-									new LinkedList<Short>(), true);
-							if (relPos != -1) {
-								((LocationTrackable) trackables[y][s])
-										.add(relPos);
-							}
-						} else {
-							if (relPos != -1) {
-								((LocationTrackable) trackables[y][s])
-										.add(relPos);
-							}
+
+				while (locationSet.next()) {
+					Material material = Material.getMaterial(locationSet
+							.getString("material"));
+					int pos = locationSet.getInt("position");
+					short relPos = (short) pos;
+					short y = (short) (pos >> 16);
+					short s = tracker.getDataIndex(material);
+					if (trackables[y][s] == null) {
+						trackables[y][s] = new LocationTrackable(material,
+								new LinkedList<Short>(), true, tracker.getTrackables() [s].getConfig());
+						if (relPos != -1) {
+							((LocationTrackable) trackables[y][s]).add(relPos);
+						}
+					} else {
+						if (relPos != -1) {
+							((LocationTrackable) trackables[y][s]).add(relPos);
 						}
 					}
+				}
 			} catch (SQLException e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					getChunkLocationData.close();
-				} catch (Exception ex) {
-				}
 			}
 		}
 		return trackables;
 	}
 
 	public synchronized void initEssenceData(UUID uuid) {
+		if (!isConnected()) {
+			plugin.severe("Could not connect to database, could not initialize essence data for "
+					+ uuid.toString());
+			return;
+		}
 		try {
 			insertEssenceData.setString(1, uuid.toString());
 			insertEssenceData.setLong(2, 0L);
 			insertEssenceData.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				insertEssenceData.close();
-			} catch (Exception ex) {
-			}
 		}
 	}
 
 	public synchronized long getEssenceData(UUID uuid) {
+		if (!isConnected()) {
+			plugin.severe("Could not connect to database, could not retrieve essence data for "
+					+ uuid.toString());
+			//deny all essences while db is dead
+			return Long.MAX_VALUE;
+		}
 		ResultSet set = null;
 		long res = 0;
 		try {
 			getEssenceData.setString(1, uuid.toString());
 			set = getEssenceData.executeQuery();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				getEssenceData.close();
-			} catch (Exception ex) {
-			}
-		}
-		try {
 			if (set.next()) {
 				res = set.getLong("timestamp");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				set.close();
-			} catch (Exception ex) {
-			}
 		}
 		return res;
 	}
 
 	public synchronized void updateEssenceData(UUID uuid, long time) {
+		if (!isConnected()) {
+			plugin.severe("Could not connect to database, could not update essence data for "
+					+ uuid.toString() + " to " + time);
+			return;
+		}
 		try {
 			updateEssenceData.setLong(1, time);
 			updateEssenceData.setString(2, uuid.toString());
 			updateEssenceData.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				updateEssenceData.close();
-			} catch (Exception ex) {
-			}
 		}
 	}
 }

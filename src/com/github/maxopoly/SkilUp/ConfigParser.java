@@ -38,6 +38,7 @@ import com.github.maxopoly.SkilUp.skills.XPDistributer;
 import com.github.maxopoly.SkilUp.tracking.AmountTrackable;
 import com.github.maxopoly.SkilUp.tracking.LocationTrackable;
 import com.github.maxopoly.SkilUp.tracking.Trackable;
+import com.github.maxopoly.SkilUp.tracking.TrackableConfig;
 import com.github.maxopoly.SkilUp.tracking.Tracker;
 
 public class ConfigParser {
@@ -46,6 +47,7 @@ public class ConfigParser {
 	private DataBaseManager dbm;
 	private EssenceTracker et;
 	private Tracker tracker;
+	private SkilUpManager manager;
 
 	ConfigParser(SkilUp plugin) {
 		this.plugin = plugin;
@@ -57,31 +59,32 @@ public class ConfigParser {
 		plugin.reloadConfig();
 		FileConfiguration config = plugin.getConfig();
 		boolean useBar = config.getBoolean("use_xp_bar", true);
-		SkilUpManager manager = new SkilUpManager(useBar);
+		manager = new SkilUpManager(useBar);
 		lvlUpMsg = config.getString("level_up_message");
 		ConfigurationSection skills = config.getConfigurationSection("skills");
-		for (String key : skills.getKeys(false)) {
-			Skill skill = parseSkill(skills.getConfigurationSection(key));
-			manager.addSkill(skill);
+		if (skills != null) {
+			for (String key : skills.getKeys(false)) {
+				Skill skill = parseSkill(skills.getConfigurationSection(key));
+				manager.addSkill(skill);
+			}
+		} else {
+			plugin.warning("No skills found specified in the config. While the plugin will still work, this makes it completly pointless");
 		}
 
 		// blocktracking
 		parseTracking(config.getConfigurationSection("tracking"));
 
 		// db stuff
-		ConfigurationSection dbStuff = config
-				.getConfigurationSection("database");
-		String host = dbStuff.getString("host");
-		int port = dbStuff.getInt("port");
-		String db = dbStuff.getString("database_name");
-		String user = dbStuff.getString("user");
-		String password = dbStuff.getString("password");
-		dbm = new DataBaseManager(manager, tracker, host, port, db, user, password,
-				plugin.getLogger());
+		parseDatabase(config.getConfigurationSection("database"));
 
 		// essence stuff
-		ConfigurationSection essenceSection = config
-				.getConfigurationSection("essence");
+		parseEssences(config.getConfigurationSection("essence"));
+
+		plugin.info("Finished parsing config and setup manager");
+		return manager;
+	}
+
+	public void parseEssences(ConfigurationSection essenceSection) {
 		if (essenceSection != null) {
 			long checkIntervall = parseTime(essenceSection.getString(
 					"check_intervall", "30m"));
@@ -91,12 +94,50 @@ public class ConfigParser {
 					+ "You got your daily reward");
 			ItemMap reward = parseItemMap(essenceSection
 					.getConfigurationSection("item"));
+			if (reward.getTotalItemAmount() == 0) {
+				plugin.warning("Essence data was provided, but no items to give were specified");
+			}
 			et = new EssenceTracker(checkIntervall, reward, rewardIntervall,
 					msg, dbm);
+		} else {
+			plugin.info("Essence section nonexistent, skipping parsing it");
 		}
 
-		plugin.info("Finished parsing config and setup manager");
-		return manager;
+	}
+
+	public void parseDatabase(ConfigurationSection dbStuff) {
+		if (dbStuff == null) {
+			plugin.severe("No database credentials specified. This plugin requires a database to run!");
+			return;
+		}
+		String host = dbStuff.getString("host");
+		if (host == null) {
+			plugin.severe("No host for database specified. Could not load database credentials");
+			return;
+		}
+		int port = dbStuff.getInt("port", -1);
+		if (port == -1) {
+			plugin.severe("No port for database specified. Could not load database credentials");
+			return;
+		}
+		String db = dbStuff.getString("database_name");
+		if (db == null) {
+			plugin.severe("No name for database specified. Could not load database credentials");
+			return;
+		}
+		String user = dbStuff.getString("user");
+		if (user == null) {
+			plugin.severe("No user for database specified. Could not load database credentials");
+			return;
+		}
+		String password = dbStuff.getString("password");
+		if (password == null) {
+			plugin.severe("No password for database specified. Could not load database credentials");
+			return;
+		}
+		dbm = new DataBaseManager(manager, tracker, host, port, db, user,
+				password, plugin.getLogger());
+
 	}
 
 	public Skill parseSkill(ConfigurationSection config) {
@@ -119,44 +160,104 @@ public class ConfigParser {
 	}
 
 	public void parseTracking(ConfigurationSection config) {
-		tracker = new Tracker();
-		for(String key : config.getKeys(false)) {
-			ConfigurationSection current = config.getConfigurationSection(key);
-			if (current == null) {
-				plugin.severe("Found the key " + key + " in tracking section where only config section identifers are allowed, could not parse this tracker");
-				continue;
+		boolean enabled = config.getBoolean("enabled", false);
+		if (!enabled) {
+			plugin.info("Block tracking is disabled");
+			return;
+		}
+		long checkIntervall = parseTime(config.getString(
+				"garbage_collection_intervall", "1m")) * 50; // ms
+		long savingTime = parseTime(config.getString("cache_invalidation_time",
+				"5m")) * 50; // ms
+		plugin.info("Initializing block tracking, garbage_collection_intervall: "
+				+ checkIntervall
+				+ "ms, cache_invalidation_time: "
+				+ savingTime
+				+ "ms");
+		tracker = new Tracker(savingTime, checkIntervall);
+		ConfigurationSection tracked = config
+				.getConfigurationSection("tracked");
+		if (tracked != null) {
+			for (String key : config.getKeys(false)) {
+				ConfigurationSection current = config
+						.getConfigurationSection(key);
+				if (current == null) {
+					plugin.severe("Found the key "
+							+ key
+							+ " in tracking section where only config section identifers are allowed, could not parse this tracker");
+					continue;
+				}
+				String type = current.getString("type");
+				if (type == null) {
+					plugin.severe("No type was specified for tracker at "
+							+ current.getCurrentPath()
+							+ ", could not parse tracker");
+					continue;
+				}
+				String matString = current.getString("material");
+				if (matString == null) {
+					plugin.severe("No material was specified for tracker at "
+							+ current.getCurrentPath()
+							+ ", could not parse tracker");
+					continue;
+				}
+				Material mat = Material.matchMaterial(matString);
+				if (mat == null) {
+					plugin.severe("Could not recognize material " + matString
+							+ " at " + current.getCurrentPath()
+							+ ", could not parse tracker");
+				}
+				boolean eventOnlyForRegistered = current.getBoolean(
+						"event_only_for_registered_block", true);
+				boolean registerPlaced = current.getBoolean(
+						"register_placed_blocks", false);
+				boolean registerGrown = current.getBoolean(
+						"register_grown_blocks", false);
+				boolean registerPushedIn = current.getBoolean(
+						"register_pushed_in", false);
+				boolean unregisterPushedOut = current.getBoolean(
+						"unregister_pushed_out", true);
+				boolean unregisterExploded = current.getBoolean(
+						"unregister_exploded", true);
+				TrackableConfig tConfig = new TrackableConfig(
+						eventOnlyForRegistered, registerPlaced, registerGrown,
+						registerPushedIn, unregisterPushedOut,
+						unregisterExploded);
+				Trackable t = null;
+				switch (type) {
+				case "AMOUNT":
+					t = new AmountTrackable(mat, (short) 0, true, tConfig);
+					plugin.info("Parsed AmountTracker for material:"
+							+ mat.toString());
+					break;
+				case "LOCATION":
+					t = new LocationTrackable(mat, new LinkedList<Short>(),
+							true, tConfig);
+					plugin.info("Parsed LocationTracker for material:"
+							+ mat.toString());
+					break;
+				default:
+					plugin.severe("Could not identify the tracker type " + type
+							+ " at " + current.getCurrentPath());
+					continue;
+				}
+				if (t != null) {
+					plugin.info("Tracker configuration: event_only_for_registered_block:"
+							+ eventOnlyForRegistered
+							+ ", register_placed_blocks:"
+							+ registerPlaced
+							+ ", register_grown_blocks:"
+							+ registerGrown
+							+ ", register_pushed_in:"
+							+ registerPushedIn
+							+ ", unregister_pushed_out:"
+							+ unregisterPushedOut
+							+ ", unregister_exploded:" + unregisterExploded);
+					tracker.registerTrackable(t);
+				}
 			}
-			String type = current.getString("type");
-			if (type == null) {
-				plugin.severe("No type was specified for tracker at " + current.getCurrentPath()+ ", could not parse tracker");
-				continue;
-			}
-			String matString = current.getString("material");
-			if (matString == null) {
-				plugin.severe("No material was specified for tracker at " + current.getCurrentPath()+ ", could not parse tracker");
-				continue;
-			}
-			Material mat = Material.matchMaterial(matString);
-			if (mat == null) {
-				plugin.severe("Could not recognize material " + matString + " at " + current.getCurrentPath()+ ", could not parse tracker");
-			}
-			Trackable t = null;
-			switch(type) {
-			case "AMOUNT":
-				t = new AmountTrackable(mat, (short) 0, true);
-				plugin.info("Parsed AmountTracker for material:" + mat.toString());
-				break;
-			case "LOCATION":
-				t = new LocationTrackable(mat, new LinkedList <Short>(), true);
-				plugin.info("Parsed LocationTracker for material:" + mat.toString());
-				break;
-			default:
-				plugin.severe("Could not identify the tracker type " + type + " at " + current.getCurrentPath());
-				continue;
-			}
-			if (t != null) {
-				tracker.registerTrackable(t);
-			}
+		} else {
+			plugin.info("No tracked materials specified in config. If you don't want to use the tracking you should explicitly disable it, as that will improve performance");
 		}
 	}
 
@@ -330,5 +431,9 @@ public class ConfigParser {
 
 	public EssenceTracker getEssenceTracker() {
 		return et;
+	}
+
+	public Tracker getTracker() {
+		return tracker;
 	}
 }

@@ -16,33 +16,54 @@ import com.github.maxopoly.SkilUp.database.DataBaseManager;
 public class Tracker {
 
 	private DataBaseManager db;
+	private ChunkGarbageCollector gc;
 
-	private Map <String, Map<Long, Trackable[][]>> amounts;
+	private Map<String, Map<Long, Trackable[][]>> amounts;
 	private Map<Material, Short> materialIndex;
-
 	private Trackable[] exampleTrackables;
 	
-	public Tracker() {
-		amounts = new TreeMap<String, Map<Long,Trackable[][]>>();
+
+	public Tracker(long savingTime, long checkIntervall) {
+		amounts = new TreeMap<String, Map<Long, Trackable[][]>>();
 		materialIndex = new TreeMap<Material, Short>();
-		exampleTrackables = new Trackable [0];
-		for(World w : Bukkit.getWorlds()) {
+		exampleTrackables = new Trackable[0];
+		for (World w : Bukkit.getWorlds()) {
+			//init all worlds
 			amounts.put(w.getName(), new TreeMap<Long, Trackable[][]>());
 		}
 		db = SkilUp.getDataBaseManager();
+		gc = new ChunkGarbageCollector(this, savingTime, checkIntervall);
+	}
+
+	public void handleLoad(Chunk c) {
+		long id = generateChunkID(c);
+		if (amounts.get(c.getWorld().getName()).get(id) == null) {
+			loadData(id, c.getWorld().getName());
+		}
+		else {
+			//chunk is cached and was loaded again, update garbage collector
+			gc.removeChunk(id, c.getWorld().getName());
+		}
+	}
+
+	public void handleUnload(Chunk c) {
+		//chunk was unloaded, we keep it cached, but add it to the garbage collector
+		gc.addChunk(generateChunkID(c), c.getWorld().getName());
 	}
 
 	public void handleBreak(BlockBreakEvent e) {
 		Block b = e.getBlock();
-		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(), generateChunkID(b.getChunk()),
-				(short) b.getLocation().getBlockY());
+		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(),
+				generateChunkID(b.getChunk()), (short) b.getLocation()
+						.getBlockY());
 		sliceData[materialIndex.get(b.getType())].handleBreak(e);
 	}
 
 	public void handlePlace(BlockBreakEvent e) {
 		Block b = e.getBlock();
-		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(), generateChunkID(b.getChunk()),
-				(short) b.getLocation().getBlockY());
+		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(),
+				generateChunkID(b.getChunk()), (short) b.getLocation()
+						.getBlockY());
 		sliceData[materialIndex.get(b.getType())].handleBreak(e);
 	}
 
@@ -58,7 +79,7 @@ public class Tracker {
 	}
 
 	public Trackable[] getDataSlice(String world, long chunkID, short y) {
-		Map <Long, Trackable[][]> worldMap = amounts.get(world);
+		Map<Long, Trackable[][]> worldMap = amounts.get(world);
 		Trackable[][] track = worldMap.get(chunkID);
 		if (track == null) {
 			track = new Trackable[256][exampleTrackables.length];
@@ -71,15 +92,16 @@ public class Tracker {
 		}
 		return t;
 	}
-	
-	public void initLayer(String world, long chunkID, short y, Trackable [] trackables) {
+
+	public void initLayer(String world, long chunkID, short y,
+			Trackable[] trackables) {
 		World w = Bukkit.getWorld(world);
-		for(int i = 0; i < exampleTrackables.length ; i++) {
+		for (int i = 0; i < exampleTrackables.length; i++) {
 			trackables[i] = exampleTrackables[i].clone();
 		}
-		Chunk c = w.getChunkAt((int)(chunkID >> 32), (int) chunkID);
-		for(int x = 0; x < 16; x++) {
-			for(int z = 0; z < 16; z++) {
+		Chunk c = w.getChunkAt((int) (chunkID >> 32), (int) chunkID);
+		for (int x = 0; x < 16; x++) {
+			for (int z = 0; z < 16; z++) {
 				Block b = c.getBlock(x, y, z);
 				Short slot = getDataIndex(b.getType());
 				if (slot != null) {
@@ -89,46 +111,37 @@ public class Tracker {
 		}
 	}
 
-	private Trackable[] getDataSliceForSaving(String world, long chunkID, short y) {
-		Map <Long, Trackable[][]> worldMap = amounts.get(world);
-		Trackable[][] track = worldMap.get(chunkID);
+	public void loadData(long id, String world) {
+		Map<Long, Trackable[][]> worldMap = amounts.get(world);
+		worldMap.put(id, db.loadChunkData(world, id));
+	}
+
+	public void saveDataAndRemoveFromCache(long id, String world) {
+		Map<Long, Trackable[][]> worldMap = amounts.get(world);
+		Trackable[][] track = worldMap.get(id);
 		if (track == null) {
 			// chunk not initialized
-			return null;
+			return;
 		}
-		System.out.println(track.length);
-		if (track[y][0] == null) {
-			// layer not initialized
-			return null;
-		}
-		return track[y];
-	}
-
-	public void loadData(Chunk c) {
-		long id = generateChunkID(c);
-		Map <Long, Trackable[][]> worldMap = amounts.get(c.getWorld().getName());
-		worldMap.put(id, db.loadChunkData(c.getWorld().getName(), id));
-	}
-
-	public void saveData(Chunk c) {
-		long id = generateChunkID(c);
 		for (short y = 0; y <= 255; y++) {
-			Trackable[] slice = getDataSliceForSaving(c.getWorld().getName(), id, (short) y);
-			if (slice != null) {
-				db.saveChunkData(c.getWorld().getName(), id, slice, y);
+			if (track[y][0] == null) {
+				// layer not initialized
+				continue;
 			}
+			db.saveChunkData(world, id, track[y], y);
 		}
+		worldMap.remove(id);
 	}
 
 	public Trackable[] getTrackables() {
 		return exampleTrackables;
 	}
-	
+
 	public void registerTrackable(Trackable t) {
-		Trackable [] exampleReplacement = new Trackable [exampleTrackables.length + 1];
-		//copy old ones over
-		for(int i = 0; i < exampleTrackables.length; i++) {
-			exampleReplacement [i] = exampleTrackables [i];
+		Trackable[] exampleReplacement = new Trackable[exampleTrackables.length + 1];
+		// copy old ones over
+		for (int i = 0; i < exampleTrackables.length; i++) {
+			exampleReplacement[i] = exampleTrackables[i];
 		}
 		exampleReplacement[exampleTrackables.length] = t;
 		materialIndex.put(t.getMaterial(), (short) exampleTrackables.length);

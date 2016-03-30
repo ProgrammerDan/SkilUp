@@ -12,8 +12,8 @@ public class AmountTrackable extends Trackable {
 	
 	private short amount;
 	
-	public AmountTrackable(Material mat, short amount, boolean savedBefore) {
-		super(mat, savedBefore);
+	public AmountTrackable(Material mat, short amount, boolean savedBefore, TrackableConfig config) {
+		super(mat, savedBefore, config);
 		this.amount = amount;
 	}
 	
@@ -39,7 +39,7 @@ public class AmountTrackable extends Trackable {
 	}
 	
 	public Trackable clone() {
-		return new AmountTrackable(getMaterial(), (short) 0, false);
+		return new AmountTrackable(getMaterial(), (short) 0, false, config);
 	}
 	
 	public void addLocation(Location loc) {

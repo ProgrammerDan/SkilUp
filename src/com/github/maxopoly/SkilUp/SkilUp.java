@@ -29,7 +29,7 @@ public class SkilUp extends ACivMod {
 		manager = cp.parseConfig();
 		dbm = cp.getDBManager();
 		essenceTracker = cp.getEssenceTracker();
-		tracker = new Tracker();
+		tracker = cp.getTracker();
 		plugin.getServer().getPluginManager().registerEvents(new LoginLogoutListener(this), this);
 		plugin.getServer().getPluginManager().registerEvents(new ChunkLoadListener(), this);
 	}

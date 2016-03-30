@@ -15,8 +15,8 @@ public class LocationTrackable extends Trackable {
 	private List <Short> positions;
 	private List <Short> removedPositions;
 	
-	public LocationTrackable(Material m, List <Short> positions, boolean savedBefore) {
-		super(m, savedBefore);
+	public LocationTrackable(Material m, List <Short> positions, boolean savedBefore, TrackableConfig config) {
+		super(m, savedBefore, config);
 		if (!savedBefore) {
 			//if it hasnt been saved before, we will save the position -1 to mark that this layer is tracked
 			positions.add((short) -1);
@@ -68,7 +68,7 @@ public class LocationTrackable extends Trackable {
 	}
 	
 	public Trackable clone() {
-		return new LocationTrackable(getMaterial(), new LinkedList <Short> (), false);
+		return new LocationTrackable(getMaterial(), new LinkedList <Short> (), false, config);
 	}
 	
 	public void addLocation(Location loc) {
