@@ -143,11 +143,11 @@ public class ConfigParser {
 			Trackable t = null;
 			switch(type) {
 			case "AMOUNT":
-				t = new AmountTrackable(mat, (short) 0, false);
+				t = new AmountTrackable(mat, (short) 0, true);
 				plugin.info("Parsed AmountTracker for material:" + mat.toString());
 				break;
 			case "LOCATION":
-				t = new LocationTrackable(mat, new LinkedList <Short>(), false);
+				t = new LocationTrackable(mat, new LinkedList <Short>(), true);
 				plugin.info("Parsed LocationTracker for material:" + mat.toString());
 				break;
 			default:

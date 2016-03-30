@@ -96,6 +96,7 @@ public class Tracker {
 			// chunk not initialized
 			return null;
 		}
+		System.out.println(track.length);
 		if (track[y][0] == null) {
 			// layer not initialized
 			return null;

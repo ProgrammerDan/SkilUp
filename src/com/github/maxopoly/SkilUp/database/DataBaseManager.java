@@ -37,8 +37,8 @@ public class DataBaseManager {
 	private PreparedStatement updateEssenceData;
 	private PreparedStatement getEssenceData;
 
-	public DataBaseManager(SkilUpManager manager, Tracker tracker, String host, int port,
-			String db, String user, String password, Logger logger) {
+	public DataBaseManager(SkilUpManager manager, Tracker tracker, String host,
+			int port, String db, String user, String password, Logger logger) {
 		plugin = SkilUp.getPlugin();
 		this.manager = manager;
 		this.tracker = tracker;
@@ -117,9 +117,9 @@ public class DataBaseManager {
 				.prepareStatement("select * from essenceTracking where uuid = ?;");
 
 		getChunkAmountData = db
-				.prepareStatement("select * from blockTracking where chunkid = ?,world = ?;");
+				.prepareStatement("select * from blockTracking where chunkid = ? and world = ?;");
 		getChunkLocationData = db
-				.prepareStatement("select * from locationTracking where chunkid = ?,world = ?;");
+				.prepareStatement("select * from locationTracking where chunkid = ? and world = ?;");
 	}
 
 	public boolean isConnected() {
@@ -300,13 +300,22 @@ public class DataBaseManager {
 	}
 
 	public Trackable[][] loadChunkData(String world, long id) {
-		Trackable[][] trackables = new Trackable[255][tracker.getTrackables().length];
-		ResultSet set = null;
+		Trackable[][] trackables = new Trackable[256][tracker.getTrackables().length];
+		ResultSet amountSet = null;
 		synchronized (getChunkAmountData) {
 			try {
 				getChunkAmountData.setLong(1, id);
 				getChunkAmountData.setString(2, world);
-				set = getChunkAmountData.executeQuery();
+				amountSet = getChunkAmountData.executeQuery();
+					while (amountSet.next()) {
+						Material mat = Material.getMaterial(amountSet
+								.getString("material"));
+						short y = amountSet.getShort("y");
+						short amount = amountSet.getShort("amount");
+						short s = tracker.getDataIndex(mat);
+						trackables[y][s] = new AmountTrackable(mat, amount,
+								true);
+					}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} finally {
@@ -316,62 +325,41 @@ public class DataBaseManager {
 				}
 			}
 		}
-		try {
-			while (set.next()) {
-				Material mat = Material.getMaterial(set.getString("material"));
-				short y = set.getShort("y");
-				short amount = set.getShort("amount");
-				short s = tracker.getDataIndex(mat);
-				trackables[y][s] = new AmountTrackable(mat, amount, true);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				set.close();
-			} catch (Exception ex) {
-			}
-		}
+		ResultSet locationSet = null;
 		synchronized (getChunkLocationData) {
 			try {
 				getChunkLocationData.setLong(1, id);
 				getChunkLocationData.setString(2, world);
-				set = getChunkAmountData.executeQuery();
+				locationSet = getChunkLocationData.executeQuery();
+				
+					while (locationSet.next()) {
+						Material material = Material.getMaterial(locationSet
+								.getString("material"));
+						int pos = locationSet.getInt("position");
+						short relPos = (short) pos;
+						short y = (short) (pos >> 16);
+						short s = tracker.getDataIndex(material);
+						if (trackables[y][s] == null) {
+							trackables[y][s] = new LocationTrackable(material,
+									new LinkedList<Short>(), true);
+							if (relPos != -1) {
+								((LocationTrackable) trackables[y][s])
+										.add(relPos);
+							}
+						} else {
+							if (relPos != -1) {
+								((LocationTrackable) trackables[y][s])
+										.add(relPos);
+							}
+						}
+					}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} finally {
 				try {
-					getChunkAmountData.close();
+					getChunkLocationData.close();
 				} catch (Exception ex) {
 				}
-			}
-		}
-		try {
-			while (set.next()) {
-				Material material = Material.getMaterial(set
-						.getString("material"));
-				int pos = set.getInt("position");
-				short relPos = (short) pos;
-				short y = (short) (pos >> 16);
-				short s = tracker.getDataIndex(material);
-				if (trackables[y][s] == null) {
-					trackables[y][s] = new LocationTrackable(material,
-							new LinkedList<Short>(), true);
-					if (relPos != -1) {
-						((LocationTrackable) trackables[y][s]).add(relPos);
-					}
-				} else {
-					if (relPos != -1) {
-						((LocationTrackable) trackables[y][s]).add(relPos);
-					}
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				set.close();
-			} catch (Exception ex) {
 			}
 		}
 		return trackables;
