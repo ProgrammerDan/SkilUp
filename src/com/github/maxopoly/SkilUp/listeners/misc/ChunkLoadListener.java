@@ -20,6 +20,7 @@ public class ChunkLoadListener implements Listener {
 	
 	@EventHandler (ignoreCancelled = true, priority = EventPriority.HIGHEST)
 	public void chunkLoad(ChunkLoadEvent e) {
+		SkilUp.getPlugin().debug("called load");
 		final Chunk c = e.getChunk();
 		Bukkit.getScheduler().runTaskAsynchronously(SkilUp.getPlugin(), new Runnable() {
 			@Override
@@ -31,6 +32,7 @@ public class ChunkLoadListener implements Listener {
 	
 	@EventHandler (ignoreCancelled = true, priority = EventPriority.HIGHEST)
 	public void chunkSave(ChunkUnloadEvent e) {
+		SkilUp.getPlugin().debug("called unload");
 		final Chunk c = e.getChunk();
 		Bukkit.getScheduler().runTaskAsynchronously(SkilUp.getPlugin(), new Runnable() {
 			@Override

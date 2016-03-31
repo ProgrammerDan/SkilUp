@@ -70,12 +70,15 @@ public class ConfigParser {
 		} else {
 			plugin.warning("No skills found specified in the config. While the plugin will still work, this makes it completly pointless");
 		}
-
+		
 		// blocktracking
 		parseTracking(config.getConfigurationSection("tracking"));
-
+		
 		// db stuff
 		parseDatabase(config.getConfigurationSection("database"));
+		
+		//cant parse them the other way for other reasons
+		tracker.setDataBase(dbm);
 
 		// essence stuff
 		parseEssences(config.getConfigurationSection("essence"));
@@ -166,9 +169,9 @@ public class ConfigParser {
 			return;
 		}
 		long checkIntervall = parseTime(config.getString(
-				"garbage_collection_intervall", "1m")) * 50; // ms
+				"garbage_collection_intervall", "1m"));
 		long savingTime = parseTime(config.getString("cache_invalidation_time",
-				"5m")) * 50; // ms
+				"5m")) * 50;  //ms
 		plugin.info("Initializing block tracking, garbage_collection_intervall: "
 				+ checkIntervall
 				+ "ms, cache_invalidation_time: "
@@ -178,8 +181,8 @@ public class ConfigParser {
 		ConfigurationSection tracked = config
 				.getConfigurationSection("tracked");
 		if (tracked != null) {
-			for (String key : config.getKeys(false)) {
-				ConfigurationSection current = config
+			for (String key : tracked.getKeys(false)) {
+				ConfigurationSection current = tracked
 						.getConfigurationSection(key);
 				if (current == null) {
 					plugin.severe("Found the key "

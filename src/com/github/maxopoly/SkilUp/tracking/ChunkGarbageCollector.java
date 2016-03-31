@@ -23,20 +23,20 @@ public class ChunkGarbageCollector {
 				.newSetFromMap(new ConcurrentHashMap<UnloadedChunk, Boolean>());
 		this.tracker = tracker;
 		this.savingTime = savingTime;
-		Bukkit.getScheduler().scheduleAsyncRepeatingTask(SkilUp.getPlugin(), new Runnable() {
+		System.out.println(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SkilUp.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
 				checkChunks();				
 			}
-		}, checkIntervall, checkIntervall);
+		}, checkIntervall, checkIntervall));
 	}
 
 	public void checkChunks() {
 		long current = System.currentTimeMillis();
-		SkilUp.getPlugin().debug("Collecting garbage chunks at " + current);
+		SkilUp.getPlugin().info("Collecting garbage chunks at " + current);
 		for (UnloadedChunk uc : chunks) {
 			if ((current - uc.getUnloadTime()) > savingTime) {
-				SkilUp.getPlugin().debug("Removing chunk " + uc.getID() + "," + uc.getWorld() + " from cache and garbage collection, because of timeout");
+				SkilUp.getPlugin().info("Removing chunk " + uc.getID() + "," + uc.getWorld() + " from cache and garbage collection, because of timeout");
 				tracker.saveDataAndRemoveFromCache(uc.getID(), uc.getWorld());
 				chunks.remove(uc);
 			}
@@ -44,12 +44,12 @@ public class ChunkGarbageCollector {
 	}
 
 	public void removeChunk(long id, String world) {
-		SkilUp.getPlugin().debug("Removing chunk " + id + "," + world + " from garbage collection, because it was loaded again");
+		SkilUp.getPlugin().info("Removing chunk " + id + "," + world + " from garbage collection, because it was loaded again");
 		chunks.remove(new UnloadedChunk(id, world, 0L));
 	}
 
 	public void addChunk(long id, String world) {
-		SkilUp.getPlugin().debug("Adding chunk " + id + "," + world + " to garbage collection, because it was unloaded");
+		SkilUp.getPlugin().info("Adding chunk " + id + "," + world + " to garbage collection, because it was unloaded");
 		chunks.add(new UnloadedChunk(id, world, System.currentTimeMillis()));
 	}
 

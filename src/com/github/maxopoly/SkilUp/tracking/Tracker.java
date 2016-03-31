@@ -1,16 +1,18 @@
 package com.github.maxopoly.SkilUp.tracking;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 
-import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
 
 public class Tracker {
@@ -21,17 +23,15 @@ public class Tracker {
 	private Map<String, Map<Long, Trackable[][]>> amounts;
 	private Map<Material, Short> materialIndex;
 	private Trackable[] exampleTrackables;
-	
 
 	public Tracker(long savingTime, long checkIntervall) {
 		amounts = new TreeMap<String, Map<Long, Trackable[][]>>();
 		materialIndex = new TreeMap<Material, Short>();
 		exampleTrackables = new Trackable[0];
 		for (World w : Bukkit.getWorlds()) {
-			//init all worlds
+			// init all worlds
 			amounts.put(w.getName(), new TreeMap<Long, Trackable[][]>());
 		}
-		db = SkilUp.getDataBaseManager();
 		gc = new ChunkGarbageCollector(this, savingTime, checkIntervall);
 	}
 
@@ -39,15 +39,15 @@ public class Tracker {
 		long id = generateChunkID(c);
 		if (amounts.get(c.getWorld().getName()).get(id) == null) {
 			loadData(id, c.getWorld().getName());
-		}
-		else {
-			//chunk is cached and was loaded again, update garbage collector
+		} else {
+			// chunk is cached and was loaded again, update garbage collector
 			gc.removeChunk(id, c.getWorld().getName());
 		}
 	}
 
 	public void handleUnload(Chunk c) {
-		//chunk was unloaded, we keep it cached, but add it to the garbage collector
+		// chunk was unloaded, we keep it cached, but add it to the garbage
+		// collector
 		gc.addChunk(generateChunkID(c), c.getWorld().getName());
 	}
 
@@ -59,12 +59,12 @@ public class Tracker {
 		sliceData[materialIndex.get(b.getType())].handleBreak(e);
 	}
 
-	public void handlePlace(BlockBreakEvent e) {
+	public void handlePlace(BlockPlaceEvent e) {
 		Block b = e.getBlock();
 		Trackable[] sliceData = getDataSlice(e.getBlock().getWorld().getName(),
 				generateChunkID(b.getChunk()), (short) b.getLocation()
 						.getBlockY());
-		sliceData[materialIndex.get(b.getType())].handleBreak(e);
+		sliceData[materialIndex.get(b.getType())].handlePlace(e);
 	}
 
 	private long generateChunkID(Chunk c) {
@@ -133,6 +133,21 @@ public class Tracker {
 		worldMap.remove(id);
 	}
 
+	public void saveAll() {
+		for (Entry<String, Map<Long, Trackable[][]>> entry : amounts.entrySet()) {
+			for (Entry<Long, Trackable[][]> deepEntry : entry.getValue()
+					.entrySet()) {
+				for (short y = 0; y <= 255; y++) {
+					if (deepEntry.getValue()[y][0] == null) {
+						// layer not initialized
+						continue;
+					}
+					db.saveChunkData(entry.getKey(), deepEntry.getKey(), deepEntry.getValue()[y], y);
+				}
+			}
+		}
+	}
+
 	public Trackable[] getTrackables() {
 		return exampleTrackables;
 	}
@@ -146,5 +161,9 @@ public class Tracker {
 		exampleReplacement[exampleTrackables.length] = t;
 		materialIndex.put(t.getMaterial(), (short) exampleTrackables.length);
 		exampleTrackables = exampleReplacement;
+	}
+
+	public void setDataBase(DataBaseManager dbm) {
+		this.db = dbm;
 	}
 }

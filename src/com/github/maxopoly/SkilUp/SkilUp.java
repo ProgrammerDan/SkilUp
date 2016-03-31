@@ -1,5 +1,6 @@
 package com.github.maxopoly.SkilUp;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -10,6 +11,7 @@ import com.github.maxopoly.SkilUp.database.DataBaseManager;
 import com.github.maxopoly.SkilUp.essences.EssenceTracker;
 import com.github.maxopoly.SkilUp.listeners.misc.ChunkLoadListener;
 import com.github.maxopoly.SkilUp.listeners.misc.LoginLogoutListener;
+import com.github.maxopoly.SkilUp.listeners.misc.TrackingListener;
 import com.github.maxopoly.SkilUp.tracking.Tracker;
 
 public class SkilUp extends ACivMod {
@@ -30,17 +32,21 @@ public class SkilUp extends ACivMod {
 		dbm = cp.getDBManager();
 		essenceTracker = cp.getEssenceTracker();
 		tracker = cp.getTracker();
-		plugin.getServer().getPluginManager().registerEvents(new LoginLogoutListener(this), this);
-		plugin.getServer().getPluginManager().registerEvents(new ChunkLoadListener(), this);
 	}
 
 	@Override
 	public void onDisable() {
-
+		tracker.saveAll();
 	}
 
 	protected String getPluginName() {
 		return "SkilUp";
+	}
+	
+	public void registerListener() {
+		Bukkit.getPluginManager().registerEvents(new LoginLogoutListener(this), this);
+		Bukkit.getPluginManager().registerEvents(new ChunkLoadListener(), this);
+		Bukkit.getPluginManager().registerEvents(new TrackingListener(tracker), this);
 	}
 
 	@Override
