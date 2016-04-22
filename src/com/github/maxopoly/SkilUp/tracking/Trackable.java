@@ -41,6 +41,13 @@ public abstract class Trackable {
 	public int hashCode() {
 		return material.hashCode();
 	}
+	
+	public boolean equals(Object o) {
+		if (!(o instanceof Trackable)) {
+			return false;
+		}
+		return ((Trackable) o).getMaterial() == material;
+	}
 
 	public void setDirty(boolean dirty) {
 		this.dirty = dirty;

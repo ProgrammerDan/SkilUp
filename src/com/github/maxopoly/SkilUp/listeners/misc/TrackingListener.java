@@ -8,7 +8,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 
 import com.github.maxopoly.SkilUp.tracking.Tracker;
 
-public class TrackingListener implements Listener{
+public class TrackingListener implements Listener {
 	
 	private Tracker tracker;
 	

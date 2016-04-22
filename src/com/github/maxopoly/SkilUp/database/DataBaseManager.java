@@ -29,8 +29,10 @@ public class DataBaseManager {
 
 	private Map<Skill, PreparedStatement> updatePlayerDataStatements;
 	private Map<Skill, PreparedStatement> loadPlayerDataStatements;
-	private Map<Trackable, PreparedStatement> removeBlockDataStatements;
-	private Map<Trackable, PreparedStatement> insertBlockDataStatements;
+	private PreparedStatement insertInitialBlockAmount;
+	private PreparedStatement updateBlockAmount;
+	private PreparedStatement addBlockLocation;
+	private PreparedStatement removeBlockLocation;
 	private PreparedStatement getChunkAmountData;
 	private PreparedStatement getChunkLocationData;
 	private PreparedStatement insertEssenceData;
@@ -68,7 +70,14 @@ public class DataBaseManager {
 				+ " y smallint not null, amount smallint not null, "
 				+ " primary key(world, chunkid, y, material));");
 		db.execute("create table if not exists locationTracking"
-				+ " (chunkid bigint not null,world varchar(255),position int not null,material varchar(255), primary key(chunkid, position));");
+				+ " (chunkid bigint not null,world varchar(255),position int not null,material varchar(255), primary key(world, chunkid, position, material));");
+		// one might argue that the material doesn't have to be included in the
+		// primary key, but when saving newly added blocks to the db, a block
+		// might be at a location
+		// where previously another tracked block was. Because no particular
+		// saving order can be guaranteed, multiple entries in the same location
+		// with different materials may exist during runtime. This should always
+		// get resolved when saving the whole cache though.
 
 		// init table for essence tracking
 		db.execute("create table if not exists essenceTracking (uuid varchar(255) not null, timestamp bigint not null, primary key(uuid));");
@@ -77,8 +86,6 @@ public class DataBaseManager {
 	public void loadPreparedStatements() {
 		updatePlayerDataStatements = new HashMap<Skill, PreparedStatement>();
 		loadPlayerDataStatements = new HashMap<Skill, PreparedStatement>();
-		removeBlockDataStatements = new HashMap<Trackable, PreparedStatement>();
-		insertBlockDataStatements = new HashMap<Trackable, PreparedStatement>();
 		for (Skill skill : manager.getSkills()) {
 			PreparedStatement save = db.prepareStatement("update skilup"
 					+ skill.getName()
@@ -88,27 +95,15 @@ public class DataBaseManager {
 					+ skill.getName() + " where uuid = ?;");
 			loadPlayerDataStatements.put(skill, load);
 		}
-
-		for (Trackable t : tracker.getTrackables()) {
-			PreparedStatement del = null;
-			PreparedStatement insert = null;
-			if (t instanceof AmountTrackable) {
-				del = db.prepareStatement("update blockTracking set amount = ? where chunkid = ?, y = ?, world = ?, material = "
-						+ t.getMaterial() + ";");
-				insert = db
-						.prepareStatement("insert into blockTracking (chunkid,material,y,amount,world) values(?,"
-								+ t.getMaterial() + ",?,?,?);");
-			} else if (t instanceof LocationTrackable) {
-				del = db.prepareStatement("remove from locationTracking"
+		updateBlockAmount = db
+				.prepareStatement("update blockTracking set amount = ? where chunkid = ?, y = ?, world = ?, material = ?;");
+		insertInitialBlockAmount = db
+				.prepareStatement("insert into blockTracking (chunkid,material,y,amount,world) values(?,?,?,?,?);");
+		removeBlockLocation = db
+				.prepareStatement("remove from locationTracking"
 						+ "where chunkid = ?, position = ?, world = ?;");
-				insert = db
-						.prepareStatement("insert into locationTracking"
-								+ t.getMaterial()
-								+ " (chunkid,position,material,world) values(?,?,?,?);");
-			}
-			removeBlockDataStatements.put(t, del);
-			insertBlockDataStatements.put(t, insert);
-		}
+		addBlockLocation = db.prepareStatement("insert into locationTracking"
+				+ " (chunkid,position,material,world) values(?,?,?,?);");
 		insertEssenceData = db
 				.prepareStatement("insert into essenceTracking (uuid,timestamp) values(?,?);");
 		updateEssenceData = db
@@ -195,7 +190,8 @@ public class DataBaseManager {
 		return true;
 	}
 
-	public void saveChunkData(String world, long id, Trackable[] data, short y) {
+	public void saveChunkData(String world, long id, Trackable[] data) {
+		plugin.info("Called db saving for " + id + "   " + y);
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not save data for chunk"
 					+ id + " in " + world);
@@ -203,31 +199,35 @@ public class DataBaseManager {
 		}
 		for (Trackable t : data) {
 			if (t.isDirty()) {
+				plugin.info("Dirty db saving for " + id + "   " + y + "   "
+						+ t.getMaterial().toString());
 				if (t instanceof AmountTrackable) {
 					if (!t.savedBefore()) {
-						PreparedStatement ins = insertBlockDataStatements
-								.get(t);
-						synchronized (ins) {
+						synchronized (insertInitialBlockAmount) {
 							try {
-								ins.setLong(1, id);
-								ins.setShort(2, y);
-								ins.setShort(3,
+								insertInitialBlockAmount.setLong(1, id);
+								insertInitialBlockAmount.setString(2, t
+										.getMaterial().toString());
+								insertInitialBlockAmount.setShort(3, y);
+								insertInitialBlockAmount.setShort(4,
 										((AmountTrackable) t).getAmount());
-								ins.setString(4, world);
+								insertInitialBlockAmount.setString(5, world);
+								insertInitialBlockAmount.execute();
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
 						}
 					} else {
-						PreparedStatement update = removeBlockDataStatements
-								.get(t);
-						synchronized (update) {
+						synchronized (updateBlockAmount) {
 							try {
-								update.setShort(1,
+								updateBlockAmount.setShort(1,
 										((AmountTrackable) t).getAmount());
-								update.setLong(2, id);
-								update.setShort(3, y);
-								update.setString(4, world);
+								updateBlockAmount.setLong(2, id);
+								updateBlockAmount.setShort(3, y);
+								updateBlockAmount.setString(4, world);
+								updateBlockAmount.setString(5, t.getMaterial()
+										.toString());
+								updateBlockAmount.execute();
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
@@ -236,33 +236,32 @@ public class DataBaseManager {
 				} else {
 					// LocationTrackable
 					if (!t.savedBefore()) {
-						PreparedStatement ins = insertBlockDataStatements
-								.get(t);
-						synchronized (ins) {
-							int shiftedY = y << 16;
+						synchronized (addBlockLocation) {
+							int shiftedY = 256 * y;
 							for (Short s : ((LocationTrackable) t)
 									.getPositions()) {
 								try {
-									ins.setLong(1, id);
-									ins.setInt(2, shiftedY + s);
-									ins.setString(3, t.getMaterial().toString());
-									ins.setString(4, world);
+									addBlockLocation.setLong(1, id);
+									addBlockLocation.setInt(2, shiftedY + s);
+									addBlockLocation.setString(3, t
+											.getMaterial().toString());
+									addBlockLocation.setString(4, world);
+									addBlockLocation.execute();
 								} catch (SQLException e) {
 									e.printStackTrace();
 								}
 							}
 						}
 					} else {
-						PreparedStatement del = removeBlockDataStatements
-								.get(t);
-						synchronized (del) {
-							int shiftedY = y << 16;
+						synchronized (removeBlockLocation) {
+							int shiftedY = 256 * y;
 							for (Short s : ((LocationTrackable) t)
 									.getRemovedPositions()) {
 								try {
-									del.setLong(1, id);
-									del.setInt(2, shiftedY + s);
-									del.setString(3, world);
+									removeBlockLocation.setLong(1, id);
+									removeBlockLocation.setInt(2, shiftedY + s);
+									removeBlockLocation.setString(3, world);
+									removeBlockLocation.execute();
 								} catch (SQLException e) {
 									e.printStackTrace();
 								}
@@ -274,7 +273,7 @@ public class DataBaseManager {
 		}
 	}
 
-	public Trackable[][] loadChunkData(String world, long id) {
+	public Trackable[] loadChunkData(String world, long id) {
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not load data for chunk"
 					+ id + " in " + world);
@@ -293,7 +292,8 @@ public class DataBaseManager {
 					short y = amountSet.getShort("y");
 					short amount = amountSet.getShort("amount");
 					short s = tracker.getDataIndex(mat);
-					trackables[y][s] = new AmountTrackable(mat, amount, true, tracker.getTrackables()[s].getConfig());
+					trackables[y][s] = new AmountTrackable(mat, amount, true,
+							tracker.getTrackables()[s].getConfig());
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -310,18 +310,21 @@ public class DataBaseManager {
 					Material material = Material.getMaterial(locationSet
 							.getString("material"));
 					int pos = locationSet.getInt("position");
-					short relPos = (short) pos;
-					short y = (short) (pos >> 16);
+					int y = pos / 256;
+					int relPos = pos % 256;
 					short s = tracker.getDataIndex(material);
 					if (trackables[y][s] == null) {
 						trackables[y][s] = new LocationTrackable(material,
-								new LinkedList<Short>(), true, tracker.getTrackables() [s].getConfig());
+								new LinkedList<Short>(), true,
+								tracker.getTrackables()[s].getConfig());
 						if (relPos != -1) {
-							((LocationTrackable) trackables[y][s]).add(relPos);
+							((LocationTrackable) trackables[y][s])
+									.add((short) relPos);
 						}
 					} else {
 						if (relPos != -1) {
-							((LocationTrackable) trackables[y][s]).add(relPos);
+							((LocationTrackable) trackables[y][s])
+									.add((short) relPos);
 						}
 					}
 				}
@@ -351,7 +354,7 @@ public class DataBaseManager {
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not retrieve essence data for "
 					+ uuid.toString());
-			//deny all essences while db is dead
+			// deny all essences while db is dead
 			return Long.MAX_VALUE;
 		}
 		ResultSet set = null;

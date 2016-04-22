@@ -32,6 +32,7 @@ public class SkilUp extends ACivMod {
 		dbm = cp.getDBManager();
 		essenceTracker = cp.getEssenceTracker();
 		tracker = cp.getTracker();
+		registerListener();
 	}
 
 	@Override

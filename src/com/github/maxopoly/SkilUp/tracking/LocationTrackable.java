@@ -62,8 +62,12 @@ public class LocationTrackable extends Trackable {
 	}
 	
 	public short translateLocation(Location loc) {
+		System.out.println("Translating location" + loc.toString());
 		int x = loc.getBlockX() % 16;
-		int z = loc.getBlockX() % 16;
+		System.out.println("Relative x:" + x);
+		int z = loc.getBlockZ() % 16;
+		System.out.println("Relative z:" + z);
+		System.out.println("Calculated unique location: " + (short) ((z * 16) + x));
 		return (short) ((z * 16) + x);
 	}
 	
