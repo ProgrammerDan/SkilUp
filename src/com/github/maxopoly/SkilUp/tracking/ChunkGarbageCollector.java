@@ -2,6 +2,7 @@ package com.github.maxopoly.SkilUp.tracking;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
@@ -43,12 +44,12 @@ public class ChunkGarbageCollector {
 		}
 	}
 
-	public void removeChunk(long id, String world) {
+	public void removeChunk(long id, UUID world) {
 		SkilUp.getPlugin().info("Removing chunk " + id + "," + world + " from garbage collection, because it was loaded again");
 		chunks.remove(new UnloadedChunk(id, world, 0L));
 	}
 
-	public void addChunk(long id, String world) {
+	public void addChunk(long id, UUID world) {
 		SkilUp.getPlugin().info("Adding chunk " + id + "," + world + " to garbage collection, because it was unloaded");
 		chunks.add(new UnloadedChunk(id, world, System.currentTimeMillis()));
 	}

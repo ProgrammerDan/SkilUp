@@ -1,11 +1,13 @@
 package com.github.maxopoly.SkilUp.tracking;
 
+import java.util.UUID;
+
 public class UnloadedChunk {
 	private long id;
 	private long unloadTime;
-	private String world;
+	private UUID world;
 	
-	public UnloadedChunk(long id, String world, long unloadTime) {
+	public UnloadedChunk(long id, UUID world, long unloadTime) {
 		this.id = id;
 		this.world = world;
 		this.unloadTime = unloadTime;
@@ -15,7 +17,7 @@ public class UnloadedChunk {
 		return id;
 	}
 	
-	public String getWorld() {
+	public UUID getWorld() {
 		return world;
 	}
 	

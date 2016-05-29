@@ -1,5 +1,7 @@
 package com.github.maxopoly.SkilUp;
 
+import java.util.logging.Level;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -75,5 +77,4 @@ public class SkilUp extends ACivMod {
 	public static Tracker getTracker() {
 		return tracker;
 	}
-
 }
