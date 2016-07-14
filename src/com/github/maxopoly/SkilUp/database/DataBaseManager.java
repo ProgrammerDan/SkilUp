@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -31,18 +32,15 @@ public class DataBaseManager {
 
 	private Map<Skill, PreparedStatement> updatePlayerDataStatements;
 	private Map<Skill, PreparedStatement> loadPlayerDataStatements;
-	private String addBlockLocation;
-	private String removeBlockLocation;
-	private String getBlockChunkData;
 	private String insertEssenceData;
-	private String updateEssenceData;
+	private String updateEssenceLogin;
+	private String updateEssenceGiven;
 	private String getEssenceData;
 
-	public DataBaseManager(SkilUpManager manager, Tracker tracker, String host, int port, String db, String user,
+	public DataBaseManager(SkilUpManager manager, String host, int port, String db, String user,
 			String password, Logger logger) {
 		plugin = SkilUp.getPlugin();
 		this.manager = manager;
-		this.tracker = tracker;
 		this.db = new DataBase(host, port, db, user, password, logger);
 		if (!this.db.connect()) {
 			logger.severe("Could not connect to database");
@@ -56,31 +54,7 @@ public class DataBaseManager {
 	 * Creates a table for each skill if it doesnt already exist
 	 */
 	public void prepareTables() {
-		// init tables for player xp tracking
-		for (Skill skill : manager.getSkills()) {
-			db.execute("create table if not exists skilup" + skill.getName()
-					+ "(uuid varchar(255) not null,level int not null," + "xp int not null,primary key(uuid));");
-		}
-
-		// init tables for block tracking
-		db.execute("create table if not exists blockTracking (" + "position int not null," + "chunkid bigint not null,"
-				+ "world varchar(36) not null," + "primary key world_key(world, chunkid, position));");
-				// one might argue that the material doesn't have to be included
-				// in the
-				// primary key, but when saving newly added blocks to the db, a
-				// block
-				// might be at a location
-				// where previously another tracked block was. Because no
-				// particular
-				// saving order can be guaranteed, multiple entries in the same
-				// location
-				// with different materials may exist during runtime. This
-				// should always
-				// get resolved when saving the whole cache though.
-
-		// init table for essence tracking
-		db.execute(
-				"create table if not exists essenceTracking (uuid varchar(255) not null, timestamp bigint not null, primary key(uuid));");
+		db.execute("create table if not exists essenceTracking (uuid varchar(255) not null, last_login bigint not null, last_gift bigint not null, primary key(uuid))");
 	}
 
 	public void loadPreparedStatements() {
@@ -93,9 +67,7 @@ public class DataBaseManager {
 			PreparedStatement load = db.prepareStatement("select * from skilup" + skill.getName() + " where uuid = ?;");
 			loadPlayerDataStatements.put(skill, load);
 		}
-		removeBlockLocation = "delete from blockTracking where chunkid = ?, position = ?, world = ?;";
-		addBlockLocation = "insert into blockTracking" + " (position,chunkid,world) values(?,?,?);";
-		insertEssenceData = "insert into essenceTracking (uuid,timestamp) values(?,?);";
+		insertEssenceData = "insert into essenceTracking (uuid,timestamp, last_login) values(?,?);";
 		updateEssenceData = "update essenceTracking set timestamp = ? where uuid = ?;";
 		getEssenceData = "select * from essenceTracking where uuid = ?;";
 		getBlockChunkData = "select * from blockTracking where chunkid = ? and world = ?;";
@@ -266,23 +238,22 @@ public class DataBaseManager {
 		}
 	}
 
-	public long getEssenceData(UUID uuid) {
+	public long[] getEssenceData(UUID uuid) {
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not retrieve essence data for " + uuid.toString());
 			// deny all essences while db is dead
-			return Long.MAX_VALUE;
+			return new long[]{Long.MAX_VALUE, Long.MAX_VALUE};
 		}
 		ResultSet set = null;
 		long res = 0;
-		try {
-			PreparedStatement getEssenceData = db.prepareStatement(this.getEssenceData);
+		try(PreparedStatement getEssenceData = db.prepareStatement(this.getEssenceData)) {
 			getEssenceData.setString(1, uuid.toString());
 			set = getEssenceData.executeQuery();
 			if (set.next()) {
 				res = set.getLong("timestamp");
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			SkilUp.getPlugin().getLogger().log(Level.SEVERE, "Failed communicating with database", e);
 		}
 		return res;
 	}

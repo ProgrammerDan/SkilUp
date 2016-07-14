@@ -1,0 +1,26 @@
+essence:
+  scanInterval: 30s
+  delay: 15m
+  bonus:
+   message: &1You've return for %days% days, here's some bonus essence!
+   factors:
+    2: 2.0
+	7: 2.0
+	30: 2.0
+  message: &1Welcome back, here's your daily essence.
+  item:
+   eye of ender:
+    material: EYE_OF_ENDER
+    lore:
+     - Essence
+    enchants:
+     dura:
+      enchant: DURABILITY
+    amount: 10
+  dropMessage: &1Your inventory was full, so the items were dropped.
+database:
+ host:
+ port:
+ database_name:
+ user:
+ password:

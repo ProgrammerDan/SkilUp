@@ -22,7 +22,6 @@ public class SkilUp extends ACivMod {
 	private CommandHandler commandHandler;
 	private static DataBaseManager dbm;
 	private static EssenceTracker essenceTracker;
-	private static Tracker tracker;
 
 	@Override
 	public void onEnable() {
@@ -33,23 +32,19 @@ public class SkilUp extends ACivMod {
 		manager = cp.parseConfig();
 		dbm = cp.getDBManager();
 		essenceTracker = cp.getEssenceTracker();
-		tracker = cp.getTracker();
 		registerListener();
 	}
 
 	@Override
 	public void onDisable() {
-		tracker.saveAll();
 	}
 
 	protected String getPluginName() {
-		return "SkilUp";
+		return "SkilUp-light";
 	}
 	
 	public void registerListener() {
 		Bukkit.getPluginManager().registerEvents(new LoginLogoutListener(this), this);
-		Bukkit.getPluginManager().registerEvents(new ChunkLoadListener(), this);
-		Bukkit.getPluginManager().registerEvents(new TrackingListener(tracker), this);
 	}
 
 	@Override

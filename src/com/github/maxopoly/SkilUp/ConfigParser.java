@@ -3,6 +3,7 @@ package com.github.maxopoly.SkilUp;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -43,10 +44,8 @@ import com.github.maxopoly.SkilUp.tracking.Tracker;
 
 public class ConfigParser {
 	private SkilUp plugin;
-	private String lvlUpMsg;
 	private DataBaseManager dbm;
 	private EssenceTracker et;
-	private Tracker tracker;
 	private SkilUpManager manager;
 
 	ConfigParser(SkilUp plugin) {
@@ -60,26 +59,10 @@ public class ConfigParser {
 		FileConfiguration config = plugin.getConfig();
 		boolean useBar = config.getBoolean("use_xp_bar", true);
 		manager = new SkilUpManager(useBar);
-		lvlUpMsg = config.getString("level_up_message");
-		ConfigurationSection skills = config.getConfigurationSection("skills");
-		if (skills != null) {
-			for (String key : skills.getKeys(false)) {
-				Skill skill = parseSkill(skills.getConfigurationSection(key));
-				manager.addSkill(skill);
-			}
-		} else {
-			plugin.warning("No skills found specified in the config. While the plugin will still work, this makes it completly pointless");
-		}
-		
-		// blocktracking
-		parseTracking(config.getConfigurationSection("tracking"));
 		
 		// db stuff
 		parseDatabase(config.getConfigurationSection("database"));
 		
-		//cant parse them the other way for other reasons
-		tracker.setDataBase(dbm);
-
 		// essence stuff
 		parseEssences(config.getConfigurationSection("essence"));
 
@@ -89,19 +72,25 @@ public class ConfigParser {
 
 	public void parseEssences(ConfigurationSection essenceSection) {
 		if (essenceSection != null) {
-			long checkIntervall = parseTime(essenceSection.getString(
-					"check_intervall", "30m"));
-			long rewardIntervall = 50 * parseTime(essenceSection.getString(
-					"reward_intervall", "23h"));
-			String msg = essenceSection.getString("reward_msg", ChatColor.BLUE
-					+ "You got your daily reward");
+			long checkDelay = parseTime(essenceSection.getString("scanInterval", "30s"));
+			long rewardDelay = parseTime(essenceSection.getString("delay", "30m"));
+			long minimumRest = parseTime(essenceSection.getString("restInterval", "18h"));
+			String msg = ChatColor.translateAlternateColorCodes('&', essenceSection.getString("message", 
+					ChatColor.BLUE + "You got your daily reward"));
 			ItemMap reward = parseItemMap(essenceSection
 					.getConfigurationSection("item"));
 			if (reward.getTotalItemAmount() == 0) {
 				plugin.warning("Essence data was provided, but no items to give were specified");
 			}
-			et = new EssenceTracker(checkIntervall, reward, rewardIntervall,
-					msg, dbm);
+			ConfigurationSection bonus = essenceSection.getConfigurationSection("bonus");
+			String bonusMsg = ChatColor.translateAlternateColorCodes('&', bonus.getString("message", 
+					ChatColor.DARK_BLUE + "Thanks for coming back! Here's a bigger daily reward."));
+			Map<String, Object> bonusBuffs = bonus.getConfigurationSection("factors").getValues(false);
+			
+			String dropMsg = ChatColor.translateAlternateColorCodes('&', essenceSection.getString("dropMessage",
+					ChatColor.YELLOW + "Your inventory was full, so the items were dropped"));
+			et = new EssenceTracker(checkDelay, rewardDelay, minimumRest, reward, msg,
+					bonusMsg, bonusBuffs, dropMsg);
 		} else {
 			plugin.info("Essence section nonexistent, skipping parsing it");
 		}
@@ -138,7 +127,7 @@ public class ConfigParser {
 			plugin.severe("No password for database specified. Could not load database credentials");
 			return;
 		}
-		dbm = new DataBaseManager(manager, tracker, host, port, db, user,
+		dbm = new DataBaseManager(manager, host, port, db, user,
 				password, plugin.getLogger());
 
 	}
