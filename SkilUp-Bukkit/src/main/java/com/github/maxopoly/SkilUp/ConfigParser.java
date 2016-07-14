@@ -104,8 +104,7 @@ public class ConfigParser {
 			plugin.severe("No password for database specified. Could not load database credentials");
 			return;
 		}
-		dbm = new DataBaseManager(manager, host, port, db, user,
-				password, plugin.getLogger());
+		dbm = new DataBaseManager(host, port, db, user, password, plugin.getLogger());
 
 	}
 

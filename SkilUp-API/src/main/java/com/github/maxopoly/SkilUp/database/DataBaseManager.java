@@ -15,23 +15,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
-import com.github.maxopoly.SkilUp.SkilUp;
-import com.github.maxopoly.SkilUp.SkilUpManager;
 
 public class DataBaseManager {
-	private SkilUp plugin;
-	private SkilUpManager manager;
 	private DataBase db;
+	private Logger logger;
 
 	private String insertEssenceData;
 	private String updateEssenceLogin;
 	private String updateEssenceGiven;
 	private String getEssenceData;
 
-	public DataBaseManager(SkilUpManager manager, String host, int port, String db, String user,
-			String password, Logger logger) {
-		plugin = SkilUp.getPlugin();
-		this.manager = manager;
+	public DataBaseManager(String host, int port, String db, String user, String password, Logger logger) {
+		this.logger = logger;
 		this.db = new DataBase(host, port, db, user, password, logger);
 		if (!this.db.connect()) {
 			logger.severe("Could not connect to database");
@@ -66,7 +61,7 @@ public class DataBaseManager {
 
 	public void initEssenceData(UUID uuid) {
 		if (!isConnected()) {
-			plugin.severe("Could not connect to database, could not initialize essence data for " + uuid.toString());
+			this.logger.severe("Could not connect to database, could not initialize essence data for " + uuid.toString());
 			return;
 		}
 		try {
@@ -76,13 +71,13 @@ public class DataBaseManager {
 			insertEssenceData.setLong(3, 0L);
 			insertEssenceData.execute();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			this.logger.log(Level.SEVERE, "SQL Exception", e);
 		}
 	}
 
 	public long[] getEssenceData(UUID uuid) {
 		if (!isConnected()) {
-			plugin.severe("Could not connect to database, could not retrieve essence data for " + uuid.toString());
+			this.logger.severe("Could not connect to database, could not retrieve essence data for " + uuid.toString());
 			// deny all essences while db is dead
 			return new long[]{Long.MAX_VALUE, Long.MAX_VALUE};
 		}
@@ -96,14 +91,14 @@ public class DataBaseManager {
 				res[1] = set.getLong("last_gift");
 			}
 		} catch (SQLException e) {
-			SkilUp.getPlugin().getLogger().log(Level.SEVERE, "Failed communicating with database", e);
+			this.logger.log(Level.SEVERE, "Failed communicating with database", e);
 		}
 		return res;
 	}
 
 	public void updateEssenceLogin(UUID uuid, long time) {
 		if (!isConnected()) {
-			plugin.severe("Could not connect to database, could not update essence login data for " + uuid.toString() + " to "
+			this.logger.severe("Could not connect to database, could not update essence login data for " + uuid.toString() + " to "
 					+ time);
 			return;
 		}
@@ -113,13 +108,13 @@ public class DataBaseManager {
 			updateEssenceData.setString(2, uuid.toString());
 			updateEssenceData.execute();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			this.logger.log(Level.SEVERE, "SQL Exception", e);
 		}
 	}
 
 	public void updateEssenceGiven(UUID uuid, long time) {
 		if (!isConnected()) {
-			plugin.severe("Could not connect to database, could not update essence give data for " + uuid.toString() + " to "
+			this.logger.severe("Could not connect to database, could not update essence give data for " + uuid.toString() + " to "
 					+ time);
 			return;
 		}
@@ -129,7 +124,7 @@ public class DataBaseManager {
 			updateEssenceData.setString(2, uuid.toString());
 			updateEssenceData.execute();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			this.logger.log(Level.SEVERE, "SQL Exception", e);
 		}
 	}
 }

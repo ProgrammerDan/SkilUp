@@ -61,6 +61,11 @@ public class EssenceTracker {
 
 	public void handleFirstLogin(Player p) {
 		SkilUp.getDataBaseManager().initEssenceData(p.getUniqueId());
+		handleLogin(p);
+	}
+	
+	public void handleLogin(Player p) {
+		SkilUp.getDataBaseManager().updateEssenceLogin(p.getUniqueId(), System.currentTimeMillis());
 	}
 
 	public void giveEssence(Player p) {

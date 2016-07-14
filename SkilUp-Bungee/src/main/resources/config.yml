@@ -1,0 +1,6 @@
+database:
+ host:
+ port:
+ database_name:
+ user:
+ password:

@@ -28,6 +28,8 @@ public class LoginLogoutListener implements Listener {
 				public void run() {
 					if (!newPlayer) {
 						et.handleFirstLogin(p);
+					} else {
+						et.handleLogin(p);
 					}
 					et.checkForGiveOut(p);
 				}

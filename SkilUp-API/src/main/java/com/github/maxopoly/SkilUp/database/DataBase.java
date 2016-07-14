@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.github.maxopoly.SkilUp.SkilUp;
 public class DataBase {
     private String host;
     private int port;
@@ -52,7 +51,7 @@ public class DataBase {
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (Exception ex) {
-            SkilUp.getPlugin().severe("Failed to initialize JDBC driver.");
+            logger.severe("Failed to initialize JDBC driver.");
             return false;
         }
         try {
@@ -114,7 +113,7 @@ public class DataBase {
             if (isConnected()) {
                 connection.prepareStatement(sql).executeUpdate();
             } else {
-                SkilUp.getPlugin().severe("Could not execute sql statement, no connection to database " + sql);
+                this.logger.severe("Could not execute sql statement, no connection to database " + sql);
             }
         } catch (SQLException ex) {
             this.logger.log(Level.SEVERE, "Could not execute SQL statement!", ex);
