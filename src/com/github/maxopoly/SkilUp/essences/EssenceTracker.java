@@ -1,13 +1,16 @@
 package com.github.maxopoly.SkilUp.essences;
 
 import java.util.Map;
+import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
 
@@ -70,10 +73,16 @@ public class EssenceTracker {
 			}
 		} else {
 			p.sendMessage(this.dropMsg);
-			for (ItemStack is : this.reward.getItemStackRepresentation()) {
-				p.getLocation().getWorld()
-						.dropItemNaturally(p.getLocation(), is);
-			}
+			final List<ItemStack> items = this.reward.getItemStackRepresentation();
+			final Location l = p.getLocation();
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					for (ItemStack item: items) {
+						l.getWorld().dropItem(l.add(0.5, 0.5, 0.5), item).setVelocity(new Vector(0, 0.05, 0));
+					}
+				}
+			}.runTask(SkilUp.getPlugin());
 		}
 	}
 }

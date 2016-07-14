@@ -17,12 +17,6 @@ import org.bukkit.Material;
 
 import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.SkilUpManager;
-import com.github.maxopoly.SkilUp.skills.PlayerXPStatus;
-import com.github.maxopoly.SkilUp.skills.Skill;
-import com.github.maxopoly.SkilUp.tracking.AmountTrackable;
-import com.github.maxopoly.SkilUp.tracking.LocationTrackable;
-import com.github.maxopoly.SkilUp.tracking.Trackable;
-import com.github.maxopoly.SkilUp.tracking.Tracker;
 
 public class DataBaseManager {
 	private SkilUp plugin;
@@ -123,7 +117,7 @@ public class DataBaseManager {
 		}
 	}
 
-	public void updateEssenceGive(UUID uuid, long time) {
+	public void updateEssenceGiven(UUID uuid, long time) {
 		if (!isConnected()) {
 			plugin.severe("Could not connect to database, could not update essence give data for " + uuid.toString() + " to "
 					+ time);

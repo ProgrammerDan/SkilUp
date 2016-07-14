@@ -1,3 +1,4 @@
+behind_bungee: false
 essence:
   scanInterval: 30s
   delay: 15m
