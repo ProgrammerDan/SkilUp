@@ -3,12 +3,12 @@ essence:
   scanInterval: 30s
   delay: 15m
   bonus:
-   message: &1You've return for %days% days, here's some bonus essence!
+   message: &1You have return for %days% days, here is some bonus essence!
    factors:
     2: 2.0
-	7: 2.0
-	30: 2.0
-  message: &1Welcome back, here's your daily essence.
+    7: 2.0
+    30: 2.0
+  message: &1Welcome back, here is your daily essence.
   item:
    eye of ender:
     material: EYE_OF_ENDER
