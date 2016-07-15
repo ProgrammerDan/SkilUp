@@ -46,8 +46,8 @@ public class DataBaseManager {
 	public void loadPreparedStatements() {
 		insertEssenceData = "insert into essenceTracking (uuid,timestamp, last_login, last_gift) values(?,?,?)";
 		updateEssenceLogin = "update essenceTracking set last_login = ? where uuid = ?";
-		updateEssenceGiven = "update essenceTracking set last_login = ? where uuid = ?";
-		getEssenceData = "select * from essenceTracking where uuid = ?";
+		updateEssenceGiven = "update essenceTracking set last_gift = ? where uuid = ?";
+		getEssenceData = "select last_login, last_gift from essenceTracking where uuid = ?";
 	}
 
 	public boolean isConnected() {
@@ -98,8 +98,7 @@ public class DataBaseManager {
 
 	public void updateEssenceLogin(UUID uuid, long time) {
 		if (!isConnected()) {
-			this.logger.severe("Could not connect to database, could not update essence login data for " + uuid.toString() + " to "
-					+ time);
+			this.logger.severe("Could not connect to database, could not update essence login data for " + uuid.toString() + " to " + time);
 			return;
 		}
 		try {
@@ -114,8 +113,7 @@ public class DataBaseManager {
 
 	public void updateEssenceGiven(UUID uuid, long time) {
 		if (!isConnected()) {
-			this.logger.severe("Could not connect to database, could not update essence give data for " + uuid.toString() + " to "
-					+ time);
+			this.logger.severe("Could not connect to database, could not update essence give data for " + uuid.toString() + " to " + time);
 			return;
 		}
 		try {

@@ -3,7 +3,7 @@ essence:
   scanInterval: 30s
   delay: 15m
   bonus:
-   message: &1You have return for %days% days, here is some bonus essence!
+   message: &1You have returned for %days% days, here is some bonus essence!
    factors:
     2: 2.0
     7: 2.0
