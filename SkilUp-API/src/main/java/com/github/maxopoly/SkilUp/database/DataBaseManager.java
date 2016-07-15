@@ -44,7 +44,7 @@ public class DataBaseManager {
 	}
 
 	public void loadPreparedStatements() {
-		insertEssenceData = "insert into essenceTracking (uuid,timestamp, last_login, last_gift) values(?,?,?)";
+		insertEssenceData = "insert into essenceTracking (uuid, last_login, last_gift) values(?,?,?)";
 		updateEssenceLogin = "update essenceTracking set last_login = ? where uuid = ?";
 		updateEssenceGiven = "update essenceTracking set last_gift = ? where uuid = ?";
 		getEssenceData = "select last_login, last_gift from essenceTracking where uuid = ?";
