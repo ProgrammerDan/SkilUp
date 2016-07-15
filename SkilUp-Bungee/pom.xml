@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>com.github.maxopoly</groupId>
 			<artifactId>SkilUp-api</artifactId>
-			<version>LATEST</version>
+			<version>1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.md-5</groupId>
