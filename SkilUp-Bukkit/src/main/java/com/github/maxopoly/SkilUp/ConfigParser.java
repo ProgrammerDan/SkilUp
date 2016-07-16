@@ -52,7 +52,7 @@ public class ConfigParser {
 			long checkDelay = parseTime(essenceSection.getString("scanInterval", "30s"));
 			long rewardDelay = parseTime(essenceSection.getString("delay", "30m"));
 			long minimumRest = parseTime(essenceSection.getString("restInterval", "18h"));
-			String msg = ChatColor.translateAlternateColorCodes('&', essenceSection.getString("message", 
+			String msg = ChatColor.translateAlternateColorCodes('~', essenceSection.getString("message", 
 					ChatColor.BLUE + "You got your daily reward"));
 			ItemMap reward = parseItemMap(essenceSection
 					.getConfigurationSection("item"));
@@ -60,11 +60,11 @@ public class ConfigParser {
 				plugin.warning("Essence data was provided, but no items to give were specified");
 			}
 			ConfigurationSection bonus = essenceSection.getConfigurationSection("bonus");
-			String bonusMsg = ChatColor.translateAlternateColorCodes('&', bonus.getString("message", 
+			String bonusMsg = ChatColor.translateAlternateColorCodes('~', bonus.getString("message", 
 					ChatColor.DARK_BLUE + "Thanks for coming back! Here's a bigger daily reward."));
 			Map<String, Object> bonusBuffs = bonus.getConfigurationSection("factors").getValues(false);
 			
-			String dropMsg = ChatColor.translateAlternateColorCodes('&', essenceSection.getString("dropMessage",
+			String dropMsg = ChatColor.translateAlternateColorCodes('~', essenceSection.getString("dropMessage",
 					ChatColor.YELLOW + "Your inventory was full, so the items were dropped"));
 			et = new EssenceTracker(checkDelay, rewardDelay, minimumRest, reward, msg,
 					bonusMsg, dropMsg, bonusBuffs);
