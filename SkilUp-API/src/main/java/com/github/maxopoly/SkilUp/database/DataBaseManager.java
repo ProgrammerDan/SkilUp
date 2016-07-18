@@ -45,7 +45,7 @@ public class DataBaseManager {
 
 	public void loadPreparedStatements() {
 		insertEssenceData = "insert into essenceTracking (uuid, last_login, last_gift) values(?,?,?)";
-		updateEssenceLogin = "update essenceTracking set last_login = ? where uuid = ?";
+		updateEssenceLogin = "insert into essenceTracking (uuid, last_login, last_gift) values (?,?,0) on duplicate key update last_login = ?";
 		updateEssenceGiven = "update essenceTracking set last_gift = ? where uuid = ?";
 		getEssenceData = "select last_login, last_gift from essenceTracking where uuid = ?";
 	}
@@ -102,9 +102,11 @@ public class DataBaseManager {
 			return;
 		}
 		try {
+			//this.logger.log(Level.INFO, "Updating login time: " + time+ " for " + uuid.toString());
 			PreparedStatement updateEssenceData = db.prepareStatement(this.updateEssenceLogin);
-			updateEssenceData.setLong(1, time);
-			updateEssenceData.setString(2, uuid.toString());
+			updateEssenceData.setLong(2, time);
+			updateEssenceData.setLong(3, time);
+			updateEssenceData.setString(1, uuid.toString());
 			updateEssenceData.execute();
 		} catch (SQLException e) {
 			this.logger.log(Level.SEVERE, "SQL Exception", e);
@@ -117,6 +119,7 @@ public class DataBaseManager {
 			return;
 		}
 		try {
+			//this.logger.log(Level.INFO, "Updating give time: " + time+ " for " + uuid.toString());
 			PreparedStatement updateEssenceData = db.prepareStatement(this.updateEssenceGiven);
 			updateEssenceData.setLong(1, time);
 			updateEssenceData.setString(2, uuid.toString());

@@ -50,8 +50,9 @@ public class ConfigParser {
 	public void parseEssences(ConfigurationSection essenceSection) {
 		if (essenceSection != null) {
 			long checkDelay = parseTime(essenceSection.getString("scanInterval", "30s"));
-			long rewardDelay = parseTime(essenceSection.getString("delay", "30m"));
-			long minimumRest = parseTime(essenceSection.getString("restInterval", "18h"));
+			// parsetime returns # of ticks, not milliseconds. * 50 for milliseconds.
+			long rewardDelay = parseTime(essenceSection.getString("delay", "30m")) * 50l;
+			long minimumRest = parseTime(essenceSection.getString("restInterval", "18h")) * 50l;
 			String msg = ChatColor.translateAlternateColorCodes('~', essenceSection.getString("message", 
 					ChatColor.BLUE + "You got your daily reward"));
 			ItemMap reward = parseItemMap(essenceSection

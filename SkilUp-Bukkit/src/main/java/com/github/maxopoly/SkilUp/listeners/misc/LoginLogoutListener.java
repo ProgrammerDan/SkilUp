@@ -19,14 +19,15 @@ public class LoginLogoutListener implements Listener {
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void playerLogin(PlayerLoginEvent e) {
 		if (SkilUp.getManager().isBehindBungee()) return;
+		System.out.println("Not behind Bungee: "+ SkilUp.getManager().isBehindBungee());
 		final EssenceTracker et = SkilUp.getEssenceTracker();
 		if (et != null) {
 			final Player p = e.getPlayer();
-			final boolean newPlayer = p.hasPlayedBefore();
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					if (!newPlayer) {
+					System.out.println("Player: " + p.getUniqueId() + " played: " + p.hasPlayedBefore());
+					if (!p.hasPlayedBefore()) {
 						et.handleFirstLogin(p);
 					} else {
 						et.handleLogin(p);

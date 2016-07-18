@@ -55,6 +55,8 @@ public class EssenceTracker {
 		// TODO: Much later, add in bonus time checks.
 		if ((System.currentTimeMillis() - lastGiven) > minimumRest && 
 				(System.currentTimeMillis() - lastLogin) > rewardDelay) {
+			System.out.println("Giving out Essences: "+p.getUniqueId() + " (last gift @ " + lastGiven + 
+					" vs. now: " + System.currentTimeMillis());
 			giveEssence(p);
 		}
 	}
