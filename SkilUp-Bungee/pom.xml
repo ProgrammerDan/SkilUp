@@ -4,7 +4,6 @@
 	<groupId>com.github.maxopoly</groupId>
 	<artifactId>SkilUp-bungee</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
 	<name>SkilUp-bungee</name>
 
 	<parent>
@@ -30,13 +29,6 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -76,7 +68,7 @@
 		<dependency>
 			<groupId>com.github.maxopoly</groupId>
 			<artifactId>SkilUp-api</artifactId>
-			<version>1.0</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.md-5</groupId>

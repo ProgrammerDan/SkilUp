@@ -4,7 +4,6 @@
 
 	<groupId>com.github.maxopoly</groupId>
 	<artifactId>SkilUp-light</artifactId>
-	<version>1.0.01</version>
 	<packaging>jar</packaging>
 
 	<name>SkilUp-light</name>
@@ -89,7 +88,7 @@
 		<dependency>
 			<groupId>com.github.maxopoly</groupId>
 			<artifactId>SkilUp-api</artifactId>
-			<version>1.0</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
 </project>
