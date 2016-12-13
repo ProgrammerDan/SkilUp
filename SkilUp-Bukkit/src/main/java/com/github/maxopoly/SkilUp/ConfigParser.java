@@ -55,10 +55,9 @@ public class ConfigParser {
 			long minimumRest = parseTime(essenceSection.getString("restInterval", "18h")) * 50l;
 			String msg = ChatColor.translateAlternateColorCodes('~', essenceSection.getString("message", 
 					ChatColor.BLUE + "You got your daily reward"));
-			ItemMap reward = parseItemMap(essenceSection
-					.getConfigurationSection("item"));
-			if (reward.getTotalItemAmount() == 0) {
-				plugin.warning("Essence data was provided, but no items to give were specified");
+			String reward = essenceSection.getConfigurationSection("command");
+			if (reward == null) {
+				plugin.warning("Essence data was provided, but no commands given");
 			}
 			ConfigurationSection bonus = essenceSection.getConfigurationSection("bonus");
 			String bonusMsg = ChatColor.translateAlternateColorCodes('~', bonus.getString("message", 
