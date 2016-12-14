@@ -12,8 +12,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
-import vg.civcraft.mc.civmodcore.itemHandling.ItemMap;
-import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parseItemMap;
 import static vg.civcraft.mc.civmodcore.util.ConfigParsing.parseTime;
 
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
@@ -55,7 +53,7 @@ public class ConfigParser {
 			long minimumRest = parseTime(essenceSection.getString("restInterval", "18h")) * 50l;
 			String msg = ChatColor.translateAlternateColorCodes('~', essenceSection.getString("message", 
 					ChatColor.BLUE + "You got your daily reward"));
-			String reward = essenceSection.getConfigurationSection("command");
+			String reward = essenceSection.getString("command");
 			if (reward == null) {
 				plugin.warning("Essence data was provided, but no commands given");
 			}

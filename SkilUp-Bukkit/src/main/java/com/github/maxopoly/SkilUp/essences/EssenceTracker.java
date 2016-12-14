@@ -7,17 +7,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import com.github.maxopoly.SkilUp.SkilUp;
 import com.github.maxopoly.SkilUp.database.DataBaseManager;
 
-import vg.civcraft.mc.civmodcore.itemHandling.ItemMap;
-
 public class EssenceTracker {
-	private ItemMap reward;
+	private String command;
 	// measured in milli seconds, because internally unix time stamps are used
 	// to keep track of the essences given out
 	private long checkDelay;
@@ -28,10 +24,10 @@ public class EssenceTracker {
 	private String rewardMsg;
 	private String dropMsg;
 
-	public EssenceTracker(long checkDelay, long rewardDelay, long minimumRest, ItemMap reward, String rewardMsg, String bonusMsg, String dropMsg, Map<String, Object> bonusFactors) {
+	public EssenceTracker(long checkDelay, long rewardDelay, long minimumRest, String command, String rewardMsg, String bonusMsg, String dropMsg, Map<String, Object> bonusFactors) {
 		this.checkDelay = checkDelay;
 		this.rewardMsg = rewardMsg;
-		this.reward = reward;
+		this.command = command;
 		this.rewardDelay = rewardDelay;
 		this.minimumRest = minimumRest;
 		this.bonusFactors = bonusFactors;
@@ -55,7 +51,7 @@ public class EssenceTracker {
 		// TODO: Much later, add in bonus time checks.
 		if ((System.currentTimeMillis() - lastGiven) > minimumRest && 
 				(System.currentTimeMillis() - lastLogin) > rewardDelay) {
-			System.out.println("Giving out Essences: "+p.getUniqueId() + " (last gift @ " + lastGiven + 
+			SkilUp.getPlugin().info("Giving out Reward command: "+p.getUniqueId() + " (last gift @ " + lastGiven + 
 					" vs. now: " + System.currentTimeMillis());
 			giveEssence(p);
 		}
@@ -71,25 +67,20 @@ public class EssenceTracker {
 	}
 
 	public void giveEssence(Player p) {
-		SkilUp.getDataBaseManager().updateEssenceGiven(p.getUniqueId(), System.currentTimeMillis());
-		Inventory i = p.getInventory();
-		p.sendMessage(this.rewardMsg);
-		if (this.reward.fitsIn(i)) {
-			for (ItemStack is : this.reward.getItemStackRepresentation()) {
-				i.addItem(is);
+		try {
+			SkilUp.getDataBaseManager().updateEssenceGiven(p.getUniqueId(), System.currentTimeMillis());
+			p.sendMessage(this.rewardMsg);
+			String lCommand = this.command.replaceAll("%player%", p.getName());
+
+			if (Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), lCommand)) {
+				SkilUp.getPlugin().info("Successfully triggered " + lCommand + " for player " + p);
+			} else {
+				SkilUp.getPlugin().severe("Failed to trigger " + lCommand + " for player " + p);
+				p.sendMessage(this.dropMsg);
 			}
-		} else {
-			p.sendMessage(this.dropMsg);
-			final List<ItemStack> items = this.reward.getItemStackRepresentation();
-			final Location l = p.getLocation();
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					for (ItemStack item: items) {
-						l.getWorld().dropItem(l.add(0.5, 0.5, 0.5), item).setVelocity(new Vector(0, 0.05, 0));
-					}
-				}
-			}.runTask(SkilUp.getPlugin());
+		} catch (Exception e) {
+			SkilUp.getPlugin().severe("Failed to trigger command reward to " + p);
+			e.printStackTrace();
 		}
 	}
 }

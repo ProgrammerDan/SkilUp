@@ -1,7 +1,7 @@
 behind_bungee: false
 essence:
   scanInterval: 30s
-  delay: 15m
+  delay: 30m
   restInterval: 22h
   bonus:
    message: ~1You have returned for %days% days, here is some bonus essence!
@@ -9,17 +9,10 @@ essence:
     2: 2.0
     7: 2.0
     30: 2.0
-  message: ~1Welcome back, here is your daily essence.
-  item:
-   eye of ender:
-    material: EYE_OF_ENDER
-    lore:
-     - Essence
-    enchants:
-     dura:
-      enchant: DURABILITY
-    amount: 10
-  dropMessage: ~1Your inventory was full, so the items were dropped.
+  message: ~1Welcome back, enjoy your advent prize!
+  # use %player% to inject player name. The command is run as Console.
+  command: 'cc give virtual cosmic 1 %player%'
+  dropMessage: ~1Failed to give you your advent prize, please let Bonkill or DeepCopy know.
 database:
  host:
  port:
