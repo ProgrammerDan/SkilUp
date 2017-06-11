@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<name>SkilUp-light Parent</name>
-	<url>http://www.github.com/Maxopoly/SkilUp</url>
+	<url>http://www.github.com/ProgrammerDan/SkilUp</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,8 +20,8 @@
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
-			<id>civcraft-repo</id>
-			<url>http://build.civcraft.co/plugin/repository/everything/</url>
+			<id>devoted-repo</id>
+			<url>https://build.devotedmc.com/plugin/repository/everything/</url>
 		</repository>
 		<repository>
 			<id>bungeecord-repo</id>
