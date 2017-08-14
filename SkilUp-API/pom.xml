@@ -9,7 +9,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<parent>
 		<groupId>com.github.maxopoly</groupId>
 		<artifactId>SkilUp-parent</artifactId>
-		<version>1.0</version>
+		<version>1.2</version>
 	</parent>
 
 	<properties>
@@ -42,7 +42,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.12-R0.1-SNAPSHOT</version>
+			<version>1.12.1-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>

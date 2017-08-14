@@ -64,8 +64,19 @@ public class DataBaseManager {
 			this.logger.severe("Could not connect to database, could not initialize essence data for " + uuid.toString());
 			return;
 		}
-		try {
-			PreparedStatement insertEssenceData = db.prepareStatement(this.insertEssenceData);
+		try(PreparedStatement getEssenceData = db.prepareStatement(this.getEssenceData)) {
+			getEssenceData.setString(1, uuid.toString());
+			try (ResultSet res = getEssenceData.executeQuery()) {
+				if (res.next()) {
+					// already exists, return
+					return;
+				}
+			}
+		} catch (SQLException e) {
+			this.logger.log(Level.SEVERE, "SQL Exception", e);
+		}
+
+		try (PreparedStatement insertEssenceData = db.prepareStatement(this.insertEssenceData)) {
 			insertEssenceData.setString(1, uuid.toString());
 			insertEssenceData.setLong(2, 0L);
 			insertEssenceData.setLong(3, 0L);
@@ -81,14 +92,14 @@ public class DataBaseManager {
 			// deny all essences while db is dead
 			return new long[]{Long.MAX_VALUE, Long.MAX_VALUE};
 		}
-		ResultSet set = null;
 		long[] res = new long[2];
 		try(PreparedStatement getEssenceData = db.prepareStatement(this.getEssenceData)) {
 			getEssenceData.setString(1, uuid.toString());
-			set = getEssenceData.executeQuery();
-			if (set.next()) {
-				res[0] = set.getLong("last_login");
-				res[1] = set.getLong("last_gift");
+			try (ResultSet set = getEssenceData.executeQuery()) {
+				if (set.next()) {
+					res[0] = set.getLong("last_login");
+					res[1] = set.getLong("last_gift");
+				}
 			}
 		} catch (SQLException e) {
 			this.logger.log(Level.SEVERE, "Failed communicating with database", e);
@@ -101,9 +112,8 @@ public class DataBaseManager {
 			this.logger.severe("Could not connect to database, could not update essence login data for " + uuid.toString() + " to " + time);
 			return;
 		}
-		try {
+		try (PreparedStatement updateEssenceData = db.prepareStatement(this.updateEssenceLogin)) {
 			//this.logger.log(Level.INFO, "Updating login time: " + time+ " for " + uuid.toString());
-			PreparedStatement updateEssenceData = db.prepareStatement(this.updateEssenceLogin);
 			updateEssenceData.setLong(2, time);
 			updateEssenceData.setLong(3, time);
 			updateEssenceData.setString(1, uuid.toString());
@@ -118,9 +128,8 @@ public class DataBaseManager {
 			this.logger.severe("Could not connect to database, could not update essence give data for " + uuid.toString() + " to " + time);
 			return;
 		}
-		try {
+		try (PreparedStatement updateEssenceData = db.prepareStatement(this.updateEssenceGiven)) {
 			//this.logger.log(Level.INFO, "Updating give time: " + time+ " for " + uuid.toString());
-			PreparedStatement updateEssenceData = db.prepareStatement(this.updateEssenceGiven);
 			updateEssenceData.setLong(1, time);
 			updateEssenceData.setString(2, uuid.toString());
 			updateEssenceData.execute();
